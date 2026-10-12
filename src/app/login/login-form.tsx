@@ -25,6 +25,7 @@ export function LoginForm() {
       {callbackError && (
         <p className="mt-5 rounded-lg bg-bad-soft px-3 py-2 text-sm text-bad">
           O link expirou ou é inválido. Tente de novo.
+          {params.get("motivo") && <span className="mt-1 block text-xs opacity-80">Detalhe: {params.get("motivo")}</span>}
         </p>
       )}
 
