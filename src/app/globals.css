@@ -1,26 +1,69 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* Paleta do produto. Troque aqui para mudar a identidade inteira. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-canvas: #f6f6f3;
+  --color-surface: #ffffff;
+  --color-line: #e4e4de;
+  --color-ink: #1b1d1c;
+  --color-muted: #6b6f6c;
+
+  --color-brand: #1f6f5c;
+  --color-brand-strong: #17574a;
+  --color-brand-soft: #e6f1ed;
+
+  --color-warn: #a15c07;
+  --color-warn-soft: #fbf0df;
+  --color-bad: #b42318;
+  --color-bad-soft: #fdecea;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Componentes de base com o mesmo visual em todo o app */
+@utility field {
+  @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition placeholder:text-muted/70 focus:border-brand focus:ring-2 focus:ring-brand/15;
+}
+@utility label {
+  @apply mb-1.5 block text-sm font-medium text-ink;
+}
+@utility hint {
+  @apply mt-1 text-xs text-muted;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60;
+}
+@utility btn-primary {
+  @apply btn bg-brand text-white hover:bg-brand-strong;
+}
+@utility btn-ghost {
+  @apply btn border border-line bg-surface text-ink hover:bg-canvas;
+}
+/* Prévia do artigo renderizado */
+.article-preview {
+  @apply max-w-none text-[15px] leading-7;
+}
+.article-preview h1 { @apply mb-4 mt-8 text-2xl font-semibold first:mt-0; }
+.article-preview h2 { @apply mb-3 mt-8 text-xl font-semibold first:mt-0; }
+.article-preview h3 { @apply mb-2 mt-6 text-lg font-semibold; }
+.article-preview p { @apply my-4; }
+.article-preview ul { @apply my-4 list-disc pl-6; }
+.article-preview ol { @apply my-4 list-decimal pl-6; }
+.article-preview li { @apply my-1; }
+.article-preview a { @apply text-brand underline underline-offset-2; }
+.article-preview blockquote { @apply my-4 border-l-4 border-line pl-4 text-muted; }
+.article-preview table { @apply my-4 w-full border-collapse text-sm; }
+.article-preview th, .article-preview td { @apply border border-line px-3 py-2 text-left; }
+.article-preview code { @apply rounded bg-canvas px-1 py-0.5 font-mono text-sm; }
+
+@utility card {
+  @apply rounded-xl border border-line bg-surface;
 }
