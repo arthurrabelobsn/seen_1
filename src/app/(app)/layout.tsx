@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { DatabaseZap } from "lucide-react";
 import { getSession } from "@/lib/session";
 import { Sidebar } from "@/components/sidebar";
 
@@ -13,20 +14,28 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
 }
 
 async function Shell({ children }: { children: React.ReactNode }) {
-  const { user, profile, sites, currentSite } = await getSession();
+  const { user, profile, avatarUrl, sites, currentSite, needsMigration } = await getSession();
 
   return (
     <div className="flex min-h-screen">
       <Sidebar
         userName={profile.full_name || user.email || "Conta"}
         userEmail={user.email ?? ""}
-        sites={sites.map((s) => ({ id: s.id, name: s.name }))}
+        avatarUrl={avatarUrl}
+        sites={sites.map((s) => ({ id: s.id, name: s.name, url: s.url, plan: s.plan ?? "pro" }))}
         currentSiteId={currentSite?.id ?? null}
       />
-      <main className="min-w-0 flex-1 px-5 pb-16 pt-20 lg:px-10 lg:pt-10">
-        <div className="mx-auto max-w-6xl">
-          <Suspense fallback={<ContentSkeleton />}>{children}</Suspense>
-        </div>
+      <main className="min-w-0 flex-1 px-5 pb-16 pt-20 lg:px-8 lg:pt-8">
+        {needsMigration && (
+          <div className="mb-6 flex items-start gap-3 rounded-xl border border-warn/30 bg-warn-soft px-4 py-3 text-sm text-warn">
+            <DatabaseZap className="mt-0.5 size-4 shrink-0" />
+            <p>
+              O banco de dados precisa de uma atualização. No Supabase, abra o <strong>SQL Editor</strong>, cole o conteúdo de{" "}
+              <code className="font-mono">supabase/migrations/0002_site_keywords_produtos.sql</code> e clique em <strong>Run</strong>.
+            </p>
+          </div>
+        )}
+        <Suspense fallback={<ContentSkeleton />}>{children}</Suspense>
       </main>
     </div>
   );
@@ -36,10 +45,8 @@ function ShellSkeleton() {
   return (
     <div className="flex min-h-screen">
       <div className="hidden w-64 border-r border-line bg-surface lg:block" />
-      <main className="flex-1 px-5 pt-20 lg:px-10 lg:pt-10">
-        <div className="mx-auto max-w-6xl">
-          <ContentSkeleton />
-        </div>
+      <main className="flex-1 px-5 pt-20 lg:px-8 lg:pt-8">
+        <ContentSkeleton />
       </main>
     </div>
   );

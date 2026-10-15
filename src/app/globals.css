@@ -1,23 +1,26 @@
 @import "tailwindcss";
 
-/* Paleta do produto. Troque aqui para mudar a identidade inteira. */
+/* Paleta Seen. O azul vem da logo (#005DFF). Troque aqui para mudar a identidade inteira. */
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Satoshi é carregada do Fontshare no layout; Geist fica de reserva. */
+  --font-sans: "Satoshi", var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  --color-canvas: #f6f6f3;
+  --color-canvas: #f4f6fa;
   --color-surface: #ffffff;
-  --color-line: #e4e4de;
-  --color-ink: #1b1d1c;
-  --color-muted: #6b6f6c;
+  --color-line: #e3e7ef;
+  --color-ink: #0b0d12;
+  --color-muted: #646b7a;
 
-  --color-brand: #1f6f5c;
-  --color-brand-strong: #17574a;
-  --color-brand-soft: #e6f1ed;
+  --color-brand: #005dff;
+  --color-brand-strong: #0047c7;
+  --color-brand-soft: #e8f0ff;
 
+  --color-good: #12805c;
+  --color-good-soft: #e5f5ee;
   --color-warn: #a15c07;
-  --color-warn-soft: #fbf0df;
-  --color-bad: #b42318;
+  --color-warn-soft: #fdf2e1;
+  --color-bad: #c0271b;
   --color-bad-soft: #fdecea;
 }
 
@@ -25,7 +28,7 @@ html,
 body {
   background: var(--color-canvas);
   color: var(--color-ink);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 /* Componentes de base com o mesmo visual em todo o app */
@@ -47,23 +50,48 @@ body {
 @utility btn-ghost {
   @apply btn border border-line bg-surface text-ink hover:bg-canvas;
 }
-/* Prévia do artigo renderizado */
-.article-preview {
-  @apply max-w-none text-[15px] leading-7;
-}
-.article-preview h1 { @apply mb-4 mt-8 text-2xl font-semibold first:mt-0; }
-.article-preview h2 { @apply mb-3 mt-8 text-xl font-semibold first:mt-0; }
-.article-preview h3 { @apply mb-2 mt-6 text-lg font-semibold; }
-.article-preview p { @apply my-4; }
-.article-preview ul { @apply my-4 list-disc pl-6; }
-.article-preview ol { @apply my-4 list-decimal pl-6; }
-.article-preview li { @apply my-1; }
-.article-preview a { @apply text-brand underline underline-offset-2; }
-.article-preview blockquote { @apply my-4 border-l-4 border-line pl-4 text-muted; }
-.article-preview table { @apply my-4 w-full border-collapse text-sm; }
-.article-preview th, .article-preview td { @apply border border-line px-3 py-2 text-left; }
-.article-preview code { @apply rounded bg-canvas px-1 py-0.5 font-mono text-sm; }
-
 @utility card {
   @apply rounded-xl border border-line bg-surface;
+}
+@utility pill {
+  @apply inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium;
+}
+
+/* Texto do artigo: usado no editor visual, na prévia e na impressão em PDF */
+.article-body {
+  @apply text-[16px] leading-7 text-ink;
+}
+.article-body > * + * { @apply mt-4; }
+.article-body h1 { @apply mt-8 text-[28px] font-bold leading-tight tracking-tight; }
+.article-body h2 { @apply mt-8 text-[22px] font-bold leading-snug tracking-tight; }
+.article-body h3 { @apply mt-6 text-lg font-semibold; }
+.article-body ul { @apply list-disc pl-6; }
+.article-body ol { @apply list-decimal pl-6; }
+.article-body li + li { @apply mt-1; }
+.article-body li > p { @apply m-0; }
+.article-body a { @apply text-brand underline underline-offset-2; }
+.article-body blockquote { @apply border-l-4 border-brand/40 pl-4 italic text-muted; }
+.article-body mark { @apply rounded bg-yellow-200/70 px-0.5; }
+.article-body code { @apply rounded bg-canvas px-1 py-0.5 font-mono text-[14px]; }
+.article-body hr { @apply my-8 border-line; }
+.article-body img { @apply mx-auto max-h-[480px] rounded-lg; }
+.article-body img.ProseMirror-selectednode { @apply outline-2 outline-offset-2 outline-brand; }
+.article-body table { @apply w-full table-fixed border-collapse text-sm; }
+.article-body th,
+.article-body td { @apply relative border border-line px-3 py-2 align-top; }
+.article-body th { @apply bg-canvas text-left font-semibold; }
+.article-body .selectedCell::after { @apply pointer-events-none absolute inset-0 bg-brand/10 content-['']; }
+.article-body .column-resize-handle { @apply pointer-events-none absolute -right-0.5 top-0 bottom-0 w-1 bg-brand; }
+.article-body .tableWrapper { @apply overflow-x-auto; }
+
+/* Texto de exemplo do editor vazio */
+.article-body p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  @apply pointer-events-none float-left h-0 text-muted/70;
+}
+.ProseMirror:focus { outline: none; }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
 }

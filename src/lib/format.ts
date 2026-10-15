@@ -15,3 +15,10 @@ export function isoDay(d: Date) {
 }
 
 export const nf = new Intl.NumberFormat("pt-BR");
+
+/** Amanhã no formato YYYY-MM-DD (data padrão ao agendar). */
+export function tomorrowIso() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return isoDay(d);
+}

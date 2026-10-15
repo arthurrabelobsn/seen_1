@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight, Search, Target } from "lucide-react";
 import { requireSite } from "@/lib/session";
-import { PageHeader } from "@/components/page-header";
+import { PageHeader } from "@/components/ui";
 import { LineChart } from "@/components/line-chart";
 import { isoDay, nf } from "@/lib/format";
 import type { Metric } from "@/lib/types";
@@ -100,7 +100,7 @@ export default async function ResultsPage({ searchParams }: PageProps<"/resultad
   const isDemo = articles.some((a) => a.title.startsWith("[Exemplo] "));
 
   return (
-    <>
+    <div className="mx-auto max-w-[1400px]">
       <PageHeader
         title="Resultados"
         description={`Desempenho orgânico de ${site.name} nos últimos ${days} dias, comparado aos ${days} anteriores`}
@@ -183,7 +183,7 @@ export default async function ResultsPage({ searchParams }: PageProps<"/resultad
           </tbody>
         </table>
       </section>
-    </>
+    </div>
   );
 }
 

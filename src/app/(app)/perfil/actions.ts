@@ -11,6 +11,7 @@ export async function saveProfile(_: ProfileState, formData: FormData): Promise<
     id: user.id,
     full_name: String(formData.get("full_name") ?? "").trim() || null,
     company: String(formData.get("company") ?? "").trim() || null,
+    avatar_url: String(formData.get("avatar_url") ?? "").trim() || null,
   });
   if (error) return { error: "Não foi possível salvar. " + error.message };
   revalidatePath("/", "layout");

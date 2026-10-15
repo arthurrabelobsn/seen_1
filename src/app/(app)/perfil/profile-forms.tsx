@@ -1,13 +1,30 @@
 "use client";
 
 import { useActionState } from "react";
+import { ImageInput } from "@/components/image-input";
 import { changePassword, saveProfile, type ProfileState } from "./actions";
 
-export function ProfileForm({ fullName, company, email }: { fullName: string; company: string; email: string }) {
+export function ProfileForm({
+  fullName,
+  company,
+  email,
+  userId,
+  avatarUrl,
+}: {
+  fullName: string;
+  company: string;
+  email: string;
+  userId: string;
+  avatarUrl: string | null;
+}) {
   const [state, action, pending] = useActionState<ProfileState, FormData>(saveProfile, {});
   return (
     <form action={action} className="card space-y-4 p-6">
       <h2 className="font-semibold">Dados pessoais</h2>
+      <div className="flex items-center gap-4">
+        <ImageInput name="avatar_url" userId={userId} folder="avatar" defaultValue={avatarUrl} className="size-20 shrink-0" compact />
+        <p className="text-sm text-muted">Sua foto aparece no menu. Sem foto, usamos a do Gravatar ligada ao seu e-mail, ou as suas iniciais.</p>
+      </div>
       <div>
         <label htmlFor="full_name" className="label">Nome</label>
         <input id="full_name" name="full_name" defaultValue={fullName} className="field" autoComplete="name" />

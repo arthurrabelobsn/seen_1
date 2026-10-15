@@ -1,4 +1,4 @@
--- Rankflow · schema inicial
+-- Seen · schema inicial
 -- Rode no Supabase: SQL Editor → New query → cole tudo → Run.
 -- Cada linha pertence a um usuário (user_id) e as políticas RLS garantem
 -- que cada cliente só enxerga e altera os próprios dados.

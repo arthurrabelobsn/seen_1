@@ -22,6 +22,12 @@ export function LoginForm() {
       <h2 className="text-2xl font-semibold tracking-tight">{TITLES[mode].title}</h2>
       <p className="mt-1 text-sm text-muted">{TITLES[mode].subtitle}</p>
 
+      {params.get("trocar") && (
+        <p className="mt-5 rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand-strong">
+          Sessão encerrada. Entre com a outra conta.
+        </p>
+      )}
+
       {callbackError && (
         <p className="mt-5 rounded-lg bg-bad-soft px-3 py-2 text-sm text-bad">
           O link expirou ou é inválido. Tente de novo.
