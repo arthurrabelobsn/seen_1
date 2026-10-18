@@ -6,6 +6,8 @@ import type { Product } from "@/lib/types";
 import { Field, SavedNote } from "@/components/ui";
 import { ImageInput } from "@/components/image-input";
 import { deleteProduct, saveProduct, type FormState } from "../actions";
+import { Hint } from "@/components/hint";
+import { HELP } from "@/lib/help";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -19,7 +21,9 @@ export function ProductsBoard({ products, userId }: { products: Product[]; userI
     <>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold">Produtos e serviços</h2>
+          <h2 className="flex items-center gap-1.5 text-lg font-bold">
+            Produtos e serviços <Hint>{HELP.produtos}</Hint>
+          </h2>
           <p className="text-sm text-muted">A IA menciona estes itens nos artigos, com link, quando o tema combinar.</p>
         </div>
         <div className="flex items-center gap-2">

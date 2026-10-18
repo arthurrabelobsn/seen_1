@@ -32,10 +32,11 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // Não colocar código entre createServerClient e getUser: renova o token da sessão.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Não colocar código entre createServerClient e getClaims: renova o token da sessão.
+  // getClaims confere a assinatura do token localmente (sem ir ao Supabase a cada clique)
+  // quando o projeto usa chaves de assinatura assimétricas.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub ? data.claims : null;
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();

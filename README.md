@@ -12,7 +12,7 @@ SEO no piloto automático: planeja, escreve, publica e mede artigos de blog nos 
 | Criar artigo | `/artigos/novo` | Escolhe uma keyword salva (traz as métricas dela), título, briefing e data |
 | Editor | `/artigos/[id]` | Editor visual (títulos, negrito, itálico, sublinhado, links, listas, tabelas, imagens, gráficos), menu "Gerar com IA", score de SEO 0–100 com sugestões, agendar, favoritar, exportar Word/PDF/HTML |
 | Keywords | `/keywords` | Adicionar em massa, gerar a partir de temas (IA), em alta, tabela com volume, tendência, dificuldade e oportunidade |
-| Resultados | `/resultados` | Cliques, impressões, CTR e posição; gráficos diários; tabela por artigo |
+| Resultados | `/resultados` | Modo Simples, Completo e Personalizado; Impacto da Seen; posição no Google; oportunidades; análise por artigo (`?artigo=`) |
 | Site | `/site` | Visão geral, Marca e IA (descrição, tom de voz, estilo de imagem), Produtos e serviços, Conexões, Plano, Avançado |
 | Perfil | `/perfil` | Foto, nome, empresa, senha |
 
@@ -28,6 +28,11 @@ SEO no piloto automático: planeja, escreve, publica e mede artigos de blog nos 
 - Supabase: autenticação, Postgres com RLS e Storage (bucket `media`)
 - Tailwind CSS 4, TipTap (editor), Lucide (ícones), `html-to-docx` (Word)
 - Fonte Satoshi, servida pelo Fontshare; Geist empacotada como reserva
+
+## Velocidade
+
+- `vercel.json` fixa as funções em São Paulo (`gru1`), perto do Supabase. Confira se o projeto do Supabase também está em São Paulo (sa-east-1).
+- A sessão é conferida com `getClaims()`, que valida o token localmente quando o projeto usa chaves de assinatura assimétricas (Supabase → Project Settings → JWT Keys). Com a chave antiga (simétrica), cada verificação ainda consulta o Supabase.
 
 ## Banco de dados
 

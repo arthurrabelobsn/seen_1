@@ -1,4 +1,5 @@
 import { CheckCircle2 } from "lucide-react";
+import { Hint } from "./hint";
 
 export function PageHeader({
   title,
@@ -85,18 +86,24 @@ export function Field({
   label,
   htmlFor,
   hint,
+  help,
   children,
 }: {
   label: React.ReactNode;
   htmlFor?: string;
   hint?: React.ReactNode;
+  /** Explicação no ícone "?" ao lado do nome do campo. */
+  help?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label htmlFor={htmlFor} className="label">
-        {label}
-      </label>
+      <div className="mb-1.5 flex items-center gap-1">
+        <label htmlFor={htmlFor} className="label mb-0">
+          {label}
+        </label>
+        {help && <Hint>{help}</Hint>}
+      </div>
       {children}
       {hint && <p className="hint">{hint}</p>}
     </div>

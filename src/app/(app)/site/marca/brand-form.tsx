@@ -5,6 +5,8 @@ import { Camera, Box, Brush, Droplets, Shapes, Smile } from "lucide-react";
 import { IMAGE_STYLES, TONES, type Site } from "@/lib/types";
 import { Field, SavedNote } from "@/components/ui";
 import { updateSite, type FormState } from "../actions";
+import { Hint } from "@/components/hint";
+import { HELP } from "@/lib/help";
 
 const STYLE_ICON: Record<string, React.ReactNode> = {
   realista: <Camera />,
@@ -45,12 +47,12 @@ export function BrandForm({ site }: { site: Site }) {
             <input id="audience" name="audience" defaultValue={site.audience ?? ""} className="field" placeholder="Mulheres 25–45, classe B, Sul do Brasil" />
           </Field>
         </div>
-        <Field label="Fatos que só você sabe" htmlFor="business_facts" hint="Perguntas que clientes fazem, histórias reais, números, garantias, prazos de entrega.">
+        <Field label="Fatos que só você sabe" help={HELP.fatos} htmlFor="business_facts" hint="Perguntas que clientes fazem, histórias reais, números, garantias, prazos de entrega.">
           <textarea id="business_facts" name="business_facts" rows={4} defaultValue={site.business_facts ?? ""} className="field" />
         </Field>
       </Block>
 
-      <Block title="Tom de voz" description="Como os artigos soam. Clique para escolher.">
+      <Block title="Tom de voz" help={HELP.tom} description="Como os artigos soam. Clique para escolher.">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {TONES.map((t) => (
             <button
@@ -68,19 +70,19 @@ export function BrandForm({ site }: { site: Site }) {
           ))}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Palavras e expressões da marca" htmlFor="brand_words" hint="Separadas por vírgula. A IA usa sempre que fizer sentido.">
+          <Field label="Palavras e expressões da marca" help={HELP.palavrasMarca} htmlFor="brand_words" hint="Separadas por vírgula. A IA usa sempre que fizer sentido.">
             <input id="brand_words" name="brand_words" defaultValue={site.brand_words?.join(", ") ?? ""} className="field" placeholder="cruelty-free, pele real" />
           </Field>
-          <Field label="Palavras proibidas" htmlFor="banned_words" hint="A IA nunca usa estes termos.">
+          <Field label="Palavras proibidas" help={HELP.palavrasProibidas} htmlFor="banned_words" hint="A IA nunca usa estes termos.">
             <input id="banned_words" name="banned_words" defaultValue={site.banned_words?.join(", ") ?? ""} className="field" placeholder="barato, milagroso" />
           </Field>
         </div>
-        <Field label="Chamada padrão no fim dos artigos" htmlFor="cta_text">
+        <Field label="Chamada no fim dos artigos" help={HELP.cta} htmlFor="cta_text">
           <input id="cta_text" name="cta_text" defaultValue={site.cta_text ?? ""} className="field" placeholder="Conheça a linha completa na nossa loja e ganhe 10% na primeira compra." />
         </Field>
       </Block>
 
-      <Block title="Estilo das imagens" description="Modelo padrão quando a IA gerar imagens para os artigos.">
+      <Block title="Estilo das imagens" help={HELP.estiloImagem} description="Modelo padrão quando a IA gerar imagens para os artigos.">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {IMAGE_STYLES.map((s) => (
             <button
@@ -112,11 +114,14 @@ export function BrandForm({ site }: { site: Site }) {
   );
 }
 
-function Block({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
+function Block({ title, description, help, children }: { title: string; description: string; help?: string; children: React.ReactNode }) {
   return (
     <section className="card space-y-4 p-6">
       <div>
-        <h2 className="text-lg font-bold">{title}</h2>
+        <h2 className="flex items-center gap-1.5 text-lg font-bold">
+          {title}
+          {help && <Hint>{help}</Hint>}
+        </h2>
         <p className="text-sm text-muted">{description}</p>
       </div>
       {children}

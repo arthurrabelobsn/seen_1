@@ -8,6 +8,8 @@ import { formatDate, nf, tomorrowIso } from "@/lib/format";
 import { DifficultyMeter, OpportunityBadge, StatusBadge } from "@/components/ui";
 import { Popover } from "@/components/popover";
 import { rescheduleArticle, toggleStar } from "./actions";
+import { Hint } from "@/components/hint";
+import { HELP } from "@/lib/help";
 
 export type FolderId = "todos" | "recomendados" | "favoritos" | "agendados" | "rascunhos" | "publicados";
 
@@ -167,10 +169,26 @@ export function ArticlesBrowser({ rows: initialRows, initialFolder }: { rows: Ar
                 <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
                   <th className="w-10 px-4 py-3" />
                   <th className="px-2 py-3 font-medium">Artigo</th>
-                  <th className="px-3 py-3 font-medium">Oportunidade</th>
-                  <th className="px-3 py-3 font-medium">Dificuldade</th>
-                  <th className="px-3 py-3 text-right font-medium">Volume</th>
-                  <th className="px-3 py-3 font-medium">Status</th>
+                  <th className="px-3 py-3 font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      Oportunidade <Hint>{HELP.oportunidade}</Hint>
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      Dificuldade <Hint>{HELP.dificuldade}</Hint>
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 text-right font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      Volume <Hint>{HELP.volume}</Hint>
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      Status <Hint>{HELP.status}</Hint>
+                    </span>
+                  </th>
                   <th className="px-3 py-3 font-medium">Data</th>
                   <th className="px-4 py-3 text-right font-medium">Ação</th>
                 </tr>

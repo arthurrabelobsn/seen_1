@@ -21,6 +21,8 @@ import type { Keyword } from "@/lib/types";
 import { nf } from "@/lib/format";
 import { DifficultyMeter, OpportunityBadge, PageHeader, SoonTag } from "@/components/ui";
 import { addKeywords, deleteKeywords, generateKeywords, refreshKeywordMetrics, setKeywordStatus } from "./actions";
+import { Hint } from "@/components/hint";
+import { HELP } from "@/lib/help";
 
 type Tab = "salva" | "em_uso" | "sugerida" | "descartada";
 const TABS: { id: Tab; label: string }[] = [
@@ -216,13 +218,41 @@ export function KeywordsBoard({ keywords, siteName, niche }: { keywords: Keyword
                       aria-label="Selecionar todas"
                     />
                   </th>
-                  <th className="px-2 py-3 font-medium">Keyword</th>
-                  <th className="px-3 py-3 font-medium">Intenção</th>
-                  <th className="px-3 py-3 text-right font-medium">Volume/mês</th>
-                  <th className="px-3 py-3 font-medium">Tendência</th>
-                  <th className="px-3 py-3 font-medium">Dificuldade</th>
-                  <th className="px-3 py-3 font-medium">Oportunidade</th>
-                  <th className="px-3 py-3 font-medium">Origem</th>
+                  <th className="px-2 py-3 font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      Palavra-chave <Hint>{HELP.palavraChave}</Hint>
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      Intenção <Hint>{HELP.intencao}</Hint>
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 text-right font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      Volume/mês <Hint>{HELP.volume}</Hint>
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      Tendência <Hint>{HELP.tendencia}</Hint>
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      Dificuldade <Hint>{HELP.dificuldade}</Hint>
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      Oportunidade <Hint>{HELP.oportunidade}</Hint>
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 font-medium">
+                    <span className="inline-flex items-center gap-1">
+                      Origem <Hint>{HELP.origem}</Hint>
+                    </span>
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Ação</th>
                 </tr>
               </thead>

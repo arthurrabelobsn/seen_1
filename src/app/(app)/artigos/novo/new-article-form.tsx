@@ -7,6 +7,8 @@ import type { Keyword } from "@/lib/types";
 import { nf } from "@/lib/format";
 import { DifficultyMeter, Field, OpportunityBadge, SavedNote, SoonTag } from "@/components/ui";
 import { createArticle, type ArticleFormState } from "../actions";
+import { Hint } from "@/components/hint";
+import { HELP } from "@/lib/help";
 
 type Kw = Pick<Keyword, "id" | "term" | "volume" | "difficulty" | "opportunity" | "status">;
 
@@ -36,7 +38,7 @@ export function NewArticleForm({ defaultDate, defaultKeywordId, keywords }: { de
     <form action={action} className="grid gap-6 lg:grid-cols-[1fr_320px]">
       <input type="hidden" name="keyword_id" value={keywordId} />
       <div className="card space-y-5 p-6">
-        <Field label="Palavra-chave principal" htmlFor="focus_keyword" hint="O termo que a pessoa digita no Google. Escolha uma salva ou digite outra.">
+        <Field label="Palavra-chave principal" help={HELP.palavraChave} htmlFor="focus_keyword" hint="O termo que a pessoa digita no Google. Escolha uma salva ou digite outra.">
           <input
             id="focus_keyword"
             name="focus_keyword"
@@ -60,17 +62,17 @@ export function NewArticleForm({ defaultDate, defaultKeywordId, keywords }: { de
         {selected && (
           <div className="grid grid-cols-3 gap-3 rounded-xl bg-canvas p-3 text-center text-sm">
             <div>
-              <p className="text-[11px] text-muted">Volume</p>
+              <p className="flex items-center justify-center gap-0.5 text-[11px] text-muted">Volume <Hint size={12}>{HELP.volume}</Hint></p>
               <p className="mt-1 font-bold tabular-nums">{selected.volume != null ? `${nf.format(selected.volume)}/mês` : "—"}</p>
             </div>
             <div>
-              <p className="text-[11px] text-muted">Dificuldade</p>
+              <p className="flex items-center justify-center gap-0.5 text-[11px] text-muted">Dificuldade <Hint size={12}>{HELP.dificuldade}</Hint></p>
               <div className="mt-1 flex justify-center">
                 <DifficultyMeter value={selected.difficulty} />
               </div>
             </div>
             <div>
-              <p className="text-[11px] text-muted">Oportunidade</p>
+              <p className="flex items-center justify-center gap-0.5 text-[11px] text-muted">Oportunidade <Hint size={12}>{HELP.oportunidade}</Hint></p>
               <div className="mt-1 flex justify-center">
                 <OpportunityBadge value={selected.opportunity} />
               </div>
@@ -93,11 +95,11 @@ export function NewArticleForm({ defaultDate, defaultKeywordId, keywords }: { de
           />
         </Field>
 
-        <Field label="Palavras-chave secundárias" htmlFor="secondary_keywords" hint="Separadas por vírgula. Variações e perguntas relacionadas.">
+        <Field label="Palavras-chave secundárias" help={HELP.secundarias} htmlFor="secondary_keywords" hint="Separadas por vírgula. Variações e perguntas relacionadas.">
           <input id="secondary_keywords" name="secondary_keywords" className="field" placeholder="closet pequeno, organizar roupas, cabides" />
         </Field>
 
-        <Field label="Briefing" htmlFor="brief">
+        <Field label="Briefing" help={HELP.briefing} htmlFor="brief">
           <textarea
             id="brief"
             name="brief"
@@ -108,7 +110,7 @@ export function NewArticleForm({ defaultDate, defaultKeywordId, keywords }: { de
         </Field>
 
         <div className="max-w-xs">
-          <Field label="Agendar para" htmlFor="scheduled_for" hint="Opcional. Sem data, o artigo entra como ideia.">
+          <Field label="Agendar para" help={HELP.agendar} htmlFor="scheduled_for" hint="Opcional. Sem data, o artigo entra como ideia.">
             <input id="scheduled_for" name="scheduled_for" type="date" className="field" defaultValue={defaultDate} />
           </Field>
         </div>

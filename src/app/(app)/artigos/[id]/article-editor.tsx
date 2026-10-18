@@ -24,11 +24,26 @@ import { toHtml } from "@/lib/content";
 import { AI_ACTIONS } from "@/lib/ai";
 import { seoChecklist, seoScore, slugify } from "@/lib/seo";
 import { nf, tomorrowIso } from "@/lib/format";
-import { STATUS_LABEL, STATUS_ORDER, type Article } from "@/lib/types";
+import { STATUS_LABEL, STATUS_ORDER, type Article, type Metric } from "@/lib/types";
+import { ArticleResults } from "@/components/article-results";
+import { Hint } from "@/components/hint";
+import { HELP } from "@/lib/help";
 import { deleteArticle, saveArticle, toggleStar, type ArticleFormState } from "../actions";
 import { runAiAction } from "../ai-actions";
 
-export function ArticleEditor({ article, siteUrl, userId }: { article: Article; siteUrl: string; userId: string }) {
+export function ArticleEditor({
+  article,
+  siteUrl,
+  userId,
+  metrics,
+  today,
+}: {
+  article: Article;
+  siteUrl: string;
+  userId: string;
+  metrics: Metric[];
+  today: string;
+}) {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, action, pending] = useActionState<ArticleFormState, FormData>(saveArticle, {});
   const [, startTransition] = useTransition();
@@ -154,6 +169,7 @@ export function ArticleEditor({ article, siteUrl, userId }: { article: Article; 
               </option>
             ))}
           </select>
+          <Hint>{HELP.status}</Hint>
 
           <SchedulePopover date={date} disabled={status === "publicado"} onSchedule={schedule} />
 
@@ -188,7 +204,7 @@ export function ArticleEditor({ article, siteUrl, userId }: { article: Article; 
           </Popover>
 
           <button type="submit" disabled={pending} className="btn-primary min-w-24">
-            {pending ? "Salvando…" : "Salvar"}
+            {article.status === "publicado" ? (pending ? "Atualizando…" : "Atualizar") : pending ? "Salvando…" : "Salvar"}
           </button>
         </div>
       </div>
@@ -227,7 +243,9 @@ export function ArticleEditor({ article, siteUrl, userId }: { article: Article; 
           </div>
 
           <details className="card mt-4 p-5" open={!!article.brief}>
-            <summary className="cursor-pointer text-sm font-semibold">Briefing e palavras secundárias</summary>
+            <summary className="cursor-pointer text-sm font-semibold">
+              Briefing e palavras secundárias <Hint>{HELP.briefing}</Hint>
+            </summary>
             <div className="mt-4 space-y-4">
               <textarea name="brief" defaultValue={article.brief ?? ""} onChange={() => setDirty(true)} rows={4} className="field" placeholder="Orientação para a redação" />
               <input
@@ -243,11 +261,16 @@ export function ArticleEditor({ article, siteUrl, userId }: { article: Article; 
 
         {/* Lateral */}
         <aside className="space-y-4 xl:sticky xl:top-6 xl:max-h-[calc(100vh-48px)] xl:self-start xl:overflow-y-auto xl:pb-6">
+          {(article.status === "publicado" || metrics.length > 0) && <ArticleResults articleId={article.id} rows={metrics} endDate={today} />}
           <section className="card p-5">
             <ScoreGauge score={score} />
-            <p className="mt-2 text-center text-xs text-muted">Score de SEO on-page: palavra-chave, conteúdo, metadados, links e imagens.</p>
+            <p className="mt-2 flex items-center justify-center gap-1 text-center text-xs text-muted">
+              Nota de otimização para o Google <Hint>{HELP.score}</Hint>
+            </p>
 
-            <h3 className="mt-5 text-sm font-semibold">Sugestões de otimização</h3>
+            <h3 className="mt-5 flex items-center gap-1 text-sm font-semibold">
+              Sugestões de melhoria <Hint>{HELP.sugestoes}</Hint>
+            </h3>
             {pendingChecks.length === 0 ? (
               <div className="mt-2 flex items-start gap-2 rounded-lg border border-good/20 bg-good-soft p-3 text-sm text-good">
                 <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
@@ -291,14 +314,16 @@ export function ArticleEditor({ article, siteUrl, userId }: { article: Article; 
           </section>
 
           <section className="card p-5">
-            <h3 className="text-sm font-semibold">Dados da palavra-chave</h3>
+            <h3 className="flex items-center gap-1 text-sm font-semibold">
+              Dados da palavra-chave <Hint>{HELP.palavraChave}</Hint>
+            </h3>
             <p className="mt-0.5 truncate text-sm text-muted">{focusKeyword || "Sem palavra-chave"}</p>
             <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
-              <Metric label="Volume">{article.volume != null ? <span className="font-bold tabular-nums">{nf.format(article.volume)}</span> : "—"}</Metric>
-              <Metric label="Dificuldade">
+              <Metric label="Volume" help={HELP.volume}>{article.volume != null ? <span className="font-bold tabular-nums">{nf.format(article.volume)}</span> : "—"}</Metric>
+              <Metric label="Dificuldade" help={HELP.dificuldade}>
                 <DifficultyMeter value={article.difficulty} />
               </Metric>
-              <Metric label="Oportunidade">
+              <Metric label="Oportunidade" help={HELP.oportunidade}>
                 <OpportunityBadge value={article.opportunity} />
               </Metric>
             </dl>
@@ -310,16 +335,16 @@ export function ArticleEditor({ article, siteUrl, userId }: { article: Article; 
           </section>
 
           <section className="card space-y-4 p-5">
-            <h3 className="text-sm font-semibold">SEO</h3>
+            <h3 className="text-sm font-semibold">Como aparece no Google</h3>
             <div>
               <label htmlFor="focus_keyword" className="label">
-                Palavra-chave principal
+                Palavra-chave principal <Hint>{HELP.palavraChave}</Hint>
               </label>
               <input id="focus_keyword" name="focus_keyword" value={focusKeyword} onChange={(e) => touch(setFocusKeyword)(e.target.value)} className="field" />
             </div>
             <div>
               <label htmlFor="slug" className="label">
-                URL (slug)
+                Endereço do artigo <Hint>{HELP.slug}</Hint>
               </label>
               <div className="flex gap-2">
                 <input id="slug" name="slug" value={slug} onChange={(e) => touch(setSlug)(slugify(e.target.value))} className="field font-mono text-xs" />
@@ -330,13 +355,13 @@ export function ArticleEditor({ article, siteUrl, userId }: { article: Article; 
             </div>
             <div>
               <label htmlFor="meta_title" className="label">
-                Título SEO <Counter n={(metaTitle || title).length} max={60} />
+                Título no Google <Hint>{HELP.tituloGoogle}</Hint> <Counter n={(metaTitle || title).length} max={60} />
               </label>
               <input id="meta_title" name="meta_title" value={metaTitle} onChange={(e) => touch(setMetaTitle)(e.target.value)} className="field" placeholder={title} />
             </div>
             <div>
               <label htmlFor="meta_description" className="label">
-                Meta description <Counter n={metaDescription.length} max={160} />
+                Descrição no Google <Hint>{HELP.descricaoGoogle}</Hint> <Counter n={metaDescription.length} max={160} />
               </label>
               <textarea id="meta_description" name="meta_description" value={metaDescription} onChange={(e) => touch(setMetaDescription)(e.target.value)} rows={3} className="field" />
               <button type="button" onClick={() => callAi({ action: "gerar_meta", selection: "" })} className="mt-1 flex items-center gap-1 text-xs font-medium text-brand hover:underline">
@@ -345,7 +370,9 @@ export function ArticleEditor({ article, siteUrl, userId }: { article: Article; 
             </div>
 
             <div className="rounded-lg border border-line p-3">
-              <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted">Prévia no Google</p>
+              <p className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                Prévia no Google <Hint>{HELP.previaGoogle}</Hint>
+              </p>
               <p className="truncate text-xs text-muted">
                 {host} › {slug || "url-do-artigo"}
               </p>
@@ -481,10 +508,13 @@ function AiPromptDialog({ request, onSubmit, onClose }: { request: AiRequest; on
   );
 }
 
-function Metric({ label, children }: { label: string; children: React.ReactNode }) {
+function Metric({ label, help, children }: { label: string; help?: string; children: React.ReactNode }) {
   return (
     <div className="rounded-lg bg-canvas px-2 py-2.5">
-      <dt className="text-[11px] text-muted">{label}</dt>
+      <dt className="flex items-center justify-center gap-0.5 text-[11px] text-muted">
+        {label}
+        {help && <Hint size={12}>{help}</Hint>}
+      </dt>
       <dd className="mt-1 flex justify-center text-sm">{children}</dd>
     </div>
   );

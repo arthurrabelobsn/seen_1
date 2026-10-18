@@ -80,31 +80,34 @@ export function seoChecklist(a: SeoInput): SeoCheck[] {
     { id: "kw", group: "palavra-chave", weight: 10, label: "Palavra-chave principal definida", tip: "Defina o termo que a pessoa digita no Google.", ok: hasKw },
     { id: "kw-title", group: "palavra-chave", weight: 10, label: "Palavra-chave no título", tip: "Coloque a palavra-chave no título, de preferência no começo.", ok: hasKw && norm(title).includes(kw) },
     { id: "kw-intro", group: "palavra-chave", weight: 8, label: "Palavra-chave nas primeiras 100 palavras", tip: "Cite a palavra-chave logo no primeiro parágrafo.", ok: hasKw && firstWords.includes(kw) },
-    { id: "kw-h2", group: "palavra-chave", weight: 5, label: "Palavra-chave em um subtítulo", tip: "Use a palavra-chave (ou variação) em pelo menos um H2.", ok: hasKw && h2s.some((h) => h.includes(kw)) },
+    { id: "kw-h2", group: "palavra-chave", weight: 5, label: "Palavra-chave em um subtítulo", tip: "Use a palavra-chave (ou uma variação) em pelo menos um subtítulo (Título 2).", ok: hasKw && h2s.some((h) => h.includes(kw)) },
     {
       id: "kw-density",
       group: "palavra-chave",
       weight: 6,
-      label: "Densidade da palavra-chave entre 0,5% e 2,5%",
-      tip: density > 2.5 ? "A palavra-chave aparece demais. Troque algumas por sinônimos." : "Cite a palavra-chave mais vezes, de forma natural.",
+      label: "Palavra-chave na medida certa",
+      tip:
+        density > 2.5
+          ? "A palavra-chave aparece demais e o texto fica artificial. Troque algumas vezes por sinônimos."
+          : "Cite a palavra-chave mais vezes ao longo do texto, de forma natural (o ideal é entre 0,5% e 2,5% das palavras).",
       ok: hasKw && density >= 0.5 && density <= 2.5,
       detail: hasKw ? `${density.toFixed(1).replace(".", ",")}% · ${kwCount}×` : undefined,
     },
-    { id: "kw-slug", group: "palavra-chave", weight: 5, label: "Palavra-chave na URL", tip: "Use a palavra-chave no slug, sem palavras de ligação.", ok: hasKw && a.slug.includes(slugify(a.focusKeyword)) },
+    { id: "kw-slug", group: "palavra-chave", weight: 5, label: "Palavra-chave no endereço (URL)", tip: "Use a palavra-chave no endereço do artigo, sem palavras de ligação.", ok: hasKw && a.slug.includes(slugify(a.focusKeyword)) },
 
     { id: "words", group: "conteudo", weight: 10, label: "Pelo menos 800 palavras", tip: "Artigos completos tendem a ranquear melhor. Aprofunde os tópicos.", ok: words.length >= 800, detail: `${words.length} palavras` },
-    { id: "h2", group: "conteudo", weight: 8, label: "Pelo menos 3 subtítulos (H2)", tip: "Divida o texto em seções com H2 para facilitar a leitura.", ok: h2s.length >= 3, detail: `${h2s.length} H2 · ${h3Count} H3` },
+    { id: "h2", group: "conteudo", weight: 8, label: "Pelo menos 3 subtítulos", tip: "Divida o texto em seções com subtítulos (Título 2) para facilitar a leitura.", ok: h2s.length >= 3, detail: `${h2s.length} subtítulos · ${h3Count} intertítulos` },
     { id: "readability", group: "conteudo", weight: 5, label: "Frases curtas (média até 22 palavras)", tip: "Quebre frases longas. Leitura fácil prende o leitor.", ok: words.length > 0 && avgSentence <= 22, detail: avgSentence ? `${Math.round(avgSentence)} palavras/frase` : undefined },
     { id: "paragraphs", group: "conteudo", weight: 3, label: "Parágrafos sem paredes de texto", tip: "Parágrafos com mais de 120 palavras cansam. Divida-os.", ok: words.length > 0 && longParagraphs === 0, detail: longParagraphs ? `${longParagraphs} longos` : undefined },
 
-    { id: "title-len", group: "metadados", weight: 6, label: "Título SEO entre 30 e 60 caracteres", tip: "Títulos muito longos são cortados no Google.", ok: title.length >= 30 && title.length <= 60, detail: `${title.length} caracteres` },
-    { id: "meta-len", group: "metadados", weight: 6, label: "Meta description entre 120 e 160 caracteres", tip: "Resuma o artigo e convide ao clique.", ok: a.metaDescription.length >= 120 && a.metaDescription.length <= 160, detail: `${a.metaDescription.length} caracteres` },
-    { id: "kw-meta", group: "metadados", weight: 4, label: "Palavra-chave na meta description", tip: "O Google destaca em negrito o termo buscado.", ok: hasKw && norm(a.metaDescription).includes(kw) },
+    { id: "title-len", group: "metadados", weight: 6, label: "Título no Google com 30 a 60 letras", tip: "Títulos muito longos são cortados no Google.", ok: title.length >= 30 && title.length <= 60, detail: `${title.length} caracteres` },
+    { id: "meta-len", group: "metadados", weight: 6, label: "Descrição no Google com 120 a 160 letras", tip: "Resuma o artigo e convide ao clique.", ok: a.metaDescription.length >= 120 && a.metaDescription.length <= 160, detail: `${a.metaDescription.length} caracteres` },
+    { id: "kw-meta", group: "metadados", weight: 4, label: "Palavra-chave na descrição do Google", tip: "O Google destaca em negrito o termo buscado.", ok: hasKw && norm(a.metaDescription).includes(kw) },
 
-    { id: "internal", group: "links e midia", weight: 6, label: "Pelo menos 2 links internos", tip: "Linke outras páginas e produtos do seu site.", ok: internal >= 2, detail: `${internal} internos` },
-    { id: "external", group: "links e midia", weight: 2, label: "Pelo menos 1 link para fonte externa", tip: "Cite uma fonte confiável para reforçar autoridade.", ok: external >= 1, detail: `${external} externos` },
+    { id: "internal", group: "links e midia", weight: 6, label: "Pelo menos 2 links para o seu site", tip: "Coloque links para outras páginas e produtos do seu próprio site.", ok: internal >= 2, detail: `${internal} links` },
+    { id: "external", group: "links e midia", weight: 2, label: "Pelo menos 1 link para uma fonte", tip: "Cite um site confiável (estudo, órgão oficial) para reforçar a credibilidade.", ok: external >= 1, detail: `${external} links` },
     { id: "images", group: "links e midia", weight: 5, label: "Pelo menos 1 imagem", tip: "Imagens ajudam a leitura e aparecem no Google Imagens.", ok: imgs.length >= 1, detail: `${imgs.length} imagens` },
-    { id: "alt", group: "links e midia", weight: 3, label: "Todas as imagens com texto alternativo", tip: "Descreva cada imagem no texto alternativo (alt).", ok: imgs.length > 0 && imgsWithAlt === imgs.length, detail: imgs.length ? `${imgsWithAlt}/${imgs.length}` : undefined },
+    { id: "alt", group: "links e midia", weight: 3, label: "Imagens com descrição", tip: "Descreva cada imagem no texto alternativo. O Google lê essa descrição.", ok: imgs.length > 0 && imgsWithAlt === imgs.length, detail: imgs.length ? `${imgsWithAlt}/${imgs.length}` : undefined },
   ];
 }
 

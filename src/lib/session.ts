@@ -11,10 +11,11 @@ export const SITE_COOKIE = "site_atual";
 /** Usuário logado + perfil + sites. Uma consulta por requisição (cache do React). */
 export const getSession = cache(async () => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  // Verificação local do token (rápida); o proxy já renovou a sessão nesta requisição.
+  const { data: auth } = await supabase.auth.getClaims();
+  const claims = auth?.claims;
+  if (!claims?.sub) redirect("/login");
+  const user = { id: claims.sub, email: (claims.email as string | undefined) ?? "" };
 
   const [{ data: profile }, { data: sites }, schemaCheck] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),

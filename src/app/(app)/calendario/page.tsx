@@ -18,8 +18,9 @@ function parseMonth(value: unknown) {
 
 export default async function CalendarPage({ searchParams }: PageProps<"/calendario">) {
   const params = await searchParams;
-  const { year, month } = parseMonth(params.mes);
+  // Usuário primeiro: só depois a página pode ler a data de hoje
   const { supabase, site } = await requireSite();
+  const { year, month } = parseMonth(params.mes);
 
   // A grade mostra semanas completas, de segunda a domingo.
   const first = new Date(year, month, 1);
@@ -74,7 +75,6 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
 
   return (
     <CalendarBoard
-      key={`${from}:${items.map((i) => i.id + i.date + i.status).join()}:${backlog.map((b) => b.id).join()}`}
       year={year}
       month={month}
       start={from}
