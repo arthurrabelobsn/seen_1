@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { siGoogle } from "simple-icons";
 import { supabaseConfigured } from "@/lib/supabase/env";
 import { SeenIcon } from "@/components/brand";
 import { LoginForm } from "./login-form";
@@ -39,7 +38,7 @@ export default function LoginPage() {
             )}
 
             <Suspense>
-              <LoginForm googlePath={siGoogle.path} />
+              <LoginForm />
             </Suspense>
           </div>
         </section>
