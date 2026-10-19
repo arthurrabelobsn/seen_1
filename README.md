@@ -44,6 +44,7 @@ Rode no Supabase (**SQL Editor → New query → cole o arquivo inteiro → Run*
 
 1. `supabase/migrations/0001_schema_inicial.sql`
 2. `supabase/migrations/0002_site_keywords_produtos.sql` (produtos, keywords com métricas, pastas de artigos, foto de perfil e o bucket de imagens)
+3. `supabase/migrations/0003_telefone_perfil.sql` (telefone e empresa preenchidos no cadastro vão para o perfil)
 
 Enquanto a 0002 não for aplicada, o app mostra um aviso no topo.
 

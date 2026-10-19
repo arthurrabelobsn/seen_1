@@ -7,12 +7,14 @@ import { changePassword, saveProfile, type ProfileState } from "./actions";
 export function ProfileForm({
   fullName,
   company,
+  phone,
   email,
   userId,
   avatarUrl,
 }: {
   fullName: string;
   company: string;
+  phone: string;
   email: string;
   userId: string;
   avatarUrl: string | null;
@@ -32,6 +34,10 @@ export function ProfileForm({
       <div>
         <label htmlFor="company" className="label">Empresa ou agência</label>
         <input id="company" name="company" defaultValue={company} className="field" autoComplete="organization" />
+      </div>
+      <div>
+        <label htmlFor="phone" className="label">Telefone</label>
+        <input id="phone" name="phone" type="tel" defaultValue={phone} className="field" autoComplete="tel-national" placeholder="(11) 91234-5678" />
       </div>
       <div>
         <label htmlFor="email" className="label">E-mail</label>

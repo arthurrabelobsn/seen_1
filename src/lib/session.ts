@@ -32,6 +32,9 @@ export const getSession = cache(async () => {
   const list = (sites ?? []) as Site[];
   const currentSite = list.find((s) => s.id === chosen) ?? list[0] ?? null;
   const p = (profile ?? { id: user.id, full_name: null, company: null, avatar_url: null }) as Profile;
+  // Antes da migração 0003 o telefone fica só nos dados do cadastro
+  p.phone = p.phone ?? ((meta.phone as string | undefined) || null);
+  p.company = p.company ?? ((meta.company as string | undefined) || null);
 
   return {
     supabase,

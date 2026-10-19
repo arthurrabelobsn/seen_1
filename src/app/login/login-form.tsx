@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, MailCheck } from "lucide-react";
 import { resetPassword, signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
 
 type Mode = "entrar" | "criar" | "recuperar";
@@ -16,14 +16,18 @@ const TITLES: Record<Mode, { title: string; subtitle: string; cta: string }> = {
 export function LoginForm() {
   const params = useSearchParams();
   const [mode, setMode] = useState<Mode>(params.get("modo") === "criar" ? "criar" : "entrar");
+  // E-mail levado de uma tela para outra (ex.: "conta já existe" → Entrar)
+  const [email, setEmail] = useState("");
   const reason = params.get("motivo") ?? "";
   const providerOff = /provider is not enabled|unsupported provider/i.test(reason);
 
-  return (
-    <div>
-      <h2 className="mt-6 text-[30px] font-bold leading-tight tracking-tight">{TITLES[mode].title}</h2>
-      <p className="mt-2 text-sm leading-relaxed text-muted">{TITLES[mode].subtitle}</p>
+  const go = (to: Mode, withEmail = "") => {
+    setEmail(withEmail);
+    setMode(to);
+  };
 
+  const notices = (
+    <>
       {params.get("trocar") && <Notice tone="info">Sessão encerrada. Entre com a outra conta.</Notice>}
       {params.get("erro") && (
         <Notice tone="error">
@@ -31,9 +35,101 @@ export function LoginForm() {
           {reason && !providerOff && <span className="mt-1 block text-xs opacity-80">Detalhe: {reason}</span>}
         </Notice>
       )}
+    </>
+  );
 
-      {/* key reinicia o formulário ao trocar de modo */}
-      <AuthForm key={mode} mode={mode} next={params.get("next") ?? ""} onForgot={() => setMode("recuperar")} />
+  // key reinicia o formulário ao trocar de modo
+  return <AuthForm key={mode + email} mode={mode} email={email} next={params.get("next") ?? ""} go={go} notices={notices} />;
+}
+
+function AuthForm({
+  mode,
+  email,
+  next,
+  go,
+  notices,
+}: {
+  mode: Mode;
+  email: string;
+  next: string;
+  go: (to: Mode, email?: string) => void;
+  notices: React.ReactNode;
+}) {
+  const action = mode === "entrar" ? signIn : mode === "criar" ? signUp : resetPassword;
+  const [state, formAction, pending] = useActionState<AuthState, FormData>(action, {});
+  const v = state.values ?? {};
+
+  if (state.sent) return <ConfirmationSent email={state.sent} onBack={() => go("entrar", state.sent)} />;
+
+  return (
+    <div>
+      <h2 className="mt-6 text-[30px] font-bold leading-tight tracking-tight">{TITLES[mode].title}</h2>
+      <p className="mt-2 text-sm leading-relaxed text-muted">{TITLES[mode].subtitle}</p>
+      {notices}
+
+      <form action={formAction} className={`${mode === "criar" ? "mt-7 space-y-4" : "mt-8 space-y-5"}`}>
+        <input type="hidden" name="next" value={next} />
+
+        {mode === "criar" && (
+          <Field id="full_name" label="Seu nome">
+            <input id="full_name" name="full_name" defaultValue={v.full_name} className="field h-12 rounded-xl px-4" autoComplete="name" placeholder="Nome e sobrenome" required />
+          </Field>
+        )}
+
+        <Field id="email" label="Seu e-mail">
+          <input
+            id="email"
+            name="email"
+            type="email"
+            defaultValue={v.email ?? email}
+            className="field h-12 rounded-xl px-4"
+            autoComplete="email"
+            placeholder="voce@empresa.com.br"
+            required
+          />
+        </Field>
+
+        {mode === "criar" && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field id="phone" label="Telefone">
+              <PhoneInput defaultValue={v.phone} />
+            </Field>
+            <Field id="company" label="Empresa" optional>
+              <input id="company" name="company" defaultValue={v.company} className="field h-12 rounded-xl px-4" autoComplete="organization" placeholder="Nome da empresa" />
+            </Field>
+          </div>
+        )}
+
+        {mode !== "recuperar" && <Passwords mode={mode} onForgot={() => go("recuperar")} />}
+
+        {state.error && (
+          <Notice tone="error">
+            {state.error}
+            {state.exists && (
+              <>
+                {" "}
+                <button type="button" onClick={() => go("entrar", v.email)} className="font-semibold underline underline-offset-2">
+                  Fazer login
+                </button>{" "}
+                ou{" "}
+                <button type="button" onClick={() => go("recuperar", v.email)} className="font-semibold underline underline-offset-2">
+                  recuperar a senha
+                </button>
+                .
+              </>
+            )}
+          </Notice>
+        )}
+        {state.message && <Notice tone="info">{state.message}</Notice>}
+
+        <button
+          type="submit"
+          disabled={pending}
+          className="btn-primary h-12 w-full rounded-xl text-[15px] shadow-[0_12px_28px_-10px_rgba(0,93,255,0.75)] hover:shadow-[0_14px_32px_-10px_rgba(0,93,255,0.9)]"
+        >
+          {pending ? <Loader2 className="size-5 animate-spin" /> : TITLES[mode].cta}
+        </button>
+      </form>
 
       {mode !== "recuperar" && (
         <>
@@ -50,19 +146,19 @@ export function LoginForm() {
         {mode === "entrar" ? (
           <>
             Ainda não tem conta?{" "}
-            <button type="button" onClick={() => setMode("criar")} className="font-semibold text-brand hover:underline">
+            <button type="button" onClick={() => go("criar")} className="font-semibold text-brand hover:underline">
               Criar conta
             </button>
           </>
         ) : mode === "criar" ? (
           <>
             Já tem conta?{" "}
-            <button type="button" onClick={() => setMode("entrar")} className="font-semibold text-brand hover:underline">
+            <button type="button" onClick={() => go("entrar")} className="font-semibold text-brand hover:underline">
               Entrar
             </button>
           </>
         ) : (
-          <button type="button" onClick={() => setMode("entrar")} className="font-semibold text-brand hover:underline">
+          <button type="button" onClick={() => go("entrar")} className="font-semibold text-brand hover:underline">
             Voltar para Entrar
           </button>
         )}
@@ -71,78 +167,136 @@ export function LoginForm() {
   );
 }
 
-function AuthForm({ mode, next, onForgot }: { mode: Mode; next: string; onForgot: () => void }) {
-  const action = mode === "entrar" ? signIn : mode === "criar" ? signUp : resetPassword;
-  const [state, formAction, pending] = useActionState<AuthState, FormData>(action, {});
+function Field({ id, label, optional, children }: { id: string; label: string; optional?: boolean; children: React.ReactNode }) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-2 block text-sm font-medium">
+        {label}
+        {optional && <span className="ml-1 font-normal text-muted">(opcional)</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+/** Senha (e confirmação, ao criar conta) com botão de mostrar. */
+function Passwords({ mode, onForgot }: { mode: Mode; onForgot: () => void }) {
   const [show, setShow] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const creating = mode === "criar";
+  const mismatch = creating && confirm.length > 0 && confirm !== password;
+  const type = show ? "text" : "password";
+  const cls = "field h-12 rounded-xl px-4 pr-12 placeholder:text-xl placeholder:tracking-[0.15em] placeholder:text-muted/50";
+  const toggle = (
+    <button
+      type="button"
+      onClick={() => setShow(!show)}
+      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted hover:text-ink"
+      aria-label={show ? "Esconder senha" : "Mostrar senha"}
+    >
+      {show ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
+    </button>
+  );
 
   return (
-    <form action={formAction} className="mt-8 space-y-5">
-      <input type="hidden" name="next" value={next} />
-
-      {mode === "criar" && (
-        <div>
-          <label htmlFor="full_name" className="mb-2 block text-sm font-medium">
-            Seu nome
-          </label>
-          <input id="full_name" name="full_name" className="field h-12 rounded-xl px-4" autoComplete="name" required />
-        </div>
-      )}
-
+    <>
       <div>
-        <label htmlFor="email" className="mb-2 block text-sm font-medium">
-          Seu e-mail
-        </label>
-        <input id="email" name="email" type="email" className="field h-12 rounded-xl px-4" autoComplete="email" placeholder="voce@empresa.com.br" required />
+        <div className="mb-2 flex items-center justify-between">
+          <label htmlFor="password" className="text-sm font-medium">
+            Senha
+          </label>
+          {mode === "entrar" && (
+            <button type="button" onClick={onForgot} className="text-xs text-muted hover:text-brand hover:underline">
+              Esqueci minha senha
+            </button>
+          )}
+        </div>
+        <div className="relative">
+          <input
+            id="password"
+            name="password"
+            type={type}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={cls}
+            placeholder="••••••••"
+            minLength={creating ? 8 : undefined}
+            autoComplete={creating ? "new-password" : "current-password"}
+            required
+          />
+          {toggle}
+        </div>
+        {creating && <p className="hint">Mínimo de 8 caracteres.</p>}
       </div>
 
-      {mode !== "recuperar" && (
+      {creating && (
         <div>
-          <div className="mb-2 flex items-center justify-between">
-            <label htmlFor="password" className="text-sm font-medium">
-              Senha
-            </label>
-            {mode === "entrar" && (
-              <button type="button" onClick={onForgot} className="text-xs text-muted hover:text-brand hover:underline">
-                Esqueci minha senha
-              </button>
-            )}
-          </div>
-          <div className="relative">
-            <input
-              id="password"
-              name="password"
-              type={show ? "text" : "password"}
-              className="field h-12 rounded-xl px-4 pr-12 placeholder:text-xl placeholder:tracking-[0.15em] placeholder:text-muted/50"
-              placeholder="••••••••"
-              minLength={mode === "criar" ? 8 : undefined}
-              autoComplete={mode === "criar" ? "new-password" : "current-password"}
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShow(!show)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted hover:text-ink"
-              aria-label={show ? "Esconder senha" : "Mostrar senha"}
-            >
-              {show ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
-            </button>
-          </div>
-          {mode === "criar" && <p className="hint">Mínimo de 8 caracteres.</p>}
+          <label htmlFor="confirm" className="mb-2 block text-sm font-medium">
+            Confirmar senha
+          </label>
+          <input
+            id="confirm"
+            name="confirm"
+            type={type}
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            className={`${cls} ${mismatch ? "border-bad focus:border-bad focus:ring-bad/20" : ""}`}
+            placeholder="••••••••"
+            autoComplete="new-password"
+            aria-invalid={mismatch}
+            required
+          />
+          {mismatch && <p className="mt-1.5 text-xs text-bad">As senhas não conferem.</p>}
         </div>
       )}
+    </>
+  );
+}
 
-      {state.error && <Notice tone="error">{state.error}</Notice>}
-      {state.message && <Notice tone="info">{state.message}</Notice>}
+/** Telefone com máscara brasileira: (11) 91234-5678. */
+function PhoneInput({ defaultValue }: { defaultValue?: string }) {
+  const [value, setValue] = useState(defaultValue ?? "");
+  return (
+    <input
+      id="phone"
+      name="phone"
+      type="tel"
+      inputMode="tel"
+      value={value}
+      onChange={(e) => setValue(maskPhone(e.target.value))}
+      className="field h-12 rounded-xl px-4"
+      autoComplete="tel-national"
+      placeholder="(11) 91234-5678"
+      required
+    />
+  );
+}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="btn-primary h-12 w-full rounded-xl text-[15px] shadow-[0_12px_28px_-10px_rgba(0,93,255,0.75)] hover:shadow-[0_14px_32px_-10px_rgba(0,93,255,0.9)]"
-      >
-        {pending ? <Loader2 className="size-5 animate-spin" /> : TITLES[mode].cta}
+function maskPhone(raw: string) {
+  const d = raw.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d.length ? `(${d}` : "";
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+/** Tela que substitui o formulário depois do cadastro. */
+function ConfirmationSent({ email, onBack }: { email: string; onBack: () => void }) {
+  return (
+    <div className="mt-8">
+      <span className="grid size-14 place-items-center rounded-2xl bg-brand-soft text-brand">
+        <MailCheck className="size-7" />
+      </span>
+      <h2 className="mt-6 text-[30px] font-bold leading-tight tracking-tight">E-mail de confirmação enviado</h2>
+      <p className="mt-3 text-sm leading-relaxed text-muted">
+        Enviamos um link para <strong className="font-semibold text-ink">{email}</strong>. Abra o e-mail e clique no link para ativar sua conta.
+      </p>
+      <p className="mt-3 text-sm leading-relaxed text-muted">Não chegou em alguns minutos? Confira a caixa de spam ou promoções.</p>
+      <button type="button" onClick={onBack} className="btn-ghost mt-8 h-12 w-full rounded-xl text-[15px]">
+        Voltar para Entrar
       </button>
-    </form>
+    </div>
   );
 }
 

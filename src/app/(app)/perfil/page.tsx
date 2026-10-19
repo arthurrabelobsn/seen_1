@@ -13,7 +13,7 @@ export default async function ProfilePage({ searchParams }: PageProps<"/perfil">
     <div className="mx-auto max-w-5xl">
       <PageHeader title="Perfil" description="Seus dados de acesso e da conta." />
       <div className="grid gap-6 lg:grid-cols-2">
-        <ProfileForm fullName={profile.full_name ?? ""} company={profile.company ?? ""} email={user.email ?? ""} userId={user.id} avatarUrl={profile.avatar_url ?? null} />
+        <ProfileForm fullName={profile.full_name ?? ""} company={profile.company ?? ""} phone={profile.phone ?? ""} email={user.email ?? ""} userId={user.id} avatarUrl={profile.avatar_url ?? null} />
         <PasswordForm highlight={params.senha === "1"} />
       </div>
       <section className="card mt-6 p-6">
