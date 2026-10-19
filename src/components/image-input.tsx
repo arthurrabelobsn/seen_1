@@ -2,7 +2,9 @@
 
 import { useRef, useState } from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
-import { uploadImage } from "@/lib/supabase/client";
+// O cliente do Supabase só é baixado na hora de enviar uma imagem (deixa as outras telas mais leves)
+const uploadImage = async (...args: Parameters<typeof import("@/lib/supabase/client").uploadImage>) =>
+  (await import("@/lib/supabase/client")).uploadImage(...args);
 
 /** Campo de imagem: envia para o Storage e guarda a URL num input escondido com o `name` dado. */
 export function ImageInput({

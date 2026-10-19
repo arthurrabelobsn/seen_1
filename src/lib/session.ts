@@ -20,12 +20,14 @@ export const getSession = cache(async () => {
   const meta = (claims.user_metadata ?? {}) as Record<string, unknown>;
   const providerAvatar = (meta.avatar_url ?? meta.picture ?? null) as string | null;
 
-  const [{ data: profile }, { data: sites }, schemaCheck] = await Promise.all([
+  const [{ data: profile }, { data: sites }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
     supabase.from("sites").select("*").order("created_at", { ascending: true }),
-    // Detecta se a migração 0002 já foi aplicada (coluna nova em products)
-    supabase.from("products").select("id").limit(1),
   ]);
+  // A migração 0002 criou a coluna avatar_url no perfil: se ela veio, não precisa de outra consulta.
+  const needsMigration = profile
+    ? !("avatar_url" in profile)
+    : Boolean((await supabase.from("products").select("id").limit(1)).error);
 
   const cookieStore = await cookies();
   const chosen = cookieStore.get(SITE_COOKIE)?.value;
@@ -43,7 +45,7 @@ export const getSession = cache(async () => {
     avatarUrl: avatarFor(user.email, p.avatar_url ?? providerAvatar),
     sites: list,
     currentSite,
-    needsMigration: Boolean(schemaCheck.error),
+    needsMigration,
   };
 });
 

@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { BarChart3, ImagePlus, Link2, Loader2, Plus, Sparkles, Trash2, X } from "lucide-react";
-import { uploadImage } from "@/lib/supabase/client";
+// O cliente do Supabase só é baixado na hora de enviar uma imagem (deixa as outras telas mais leves)
+const uploadImage = async (...args: Parameters<typeof import("@/lib/supabase/client").uploadImage>) =>
+  (await import("@/lib/supabase/client")).uploadImage(...args);
 import { blobToDataUrl, chartSvg, svgToPng, type ChartRow } from "./chart";
 
 /** Janela modal com o visual do app. */

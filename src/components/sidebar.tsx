@@ -9,9 +9,12 @@ import {
   Check,
   ChevronsUpDown,
   ChevronUp,
+  ExternalLink,
   FileText,
+  GraduationCap,
   Globe,
   KeyRound,
+  LifeBuoy,
   LogOut,
   Menu,
   Plus,
@@ -97,6 +100,23 @@ export function Sidebar({ userName, userEmail, avatarUrl, sites, currentSiteId }
               <Icon className="size-[18px]" />
             </NavLink>
           ))}
+
+          {/* Área de aprendizado: separada das funções do programa */}
+          <div className="!my-3 border-t border-line" role="separator" />
+          <NavLink href="/trilhas" label="Trilhas" active={isActive("/trilhas")} onClick={close}>
+            <GraduationCap className="size-[18px]" />
+          </NavLink>
+          <a
+            href="/ajuda"
+            target="_blank"
+            rel="noopener"
+            onClick={close}
+            className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-canvas hover:text-ink"
+          >
+            <LifeBuoy className="size-[18px]" />
+            Suporte
+            <ExternalLink className="ml-auto size-3.5 opacity-0 transition group-hover:opacity-100" aria-label="abre em nova aba" />
+          </a>
         </nav>
 
         <div className="space-y-1 border-t border-line p-3">

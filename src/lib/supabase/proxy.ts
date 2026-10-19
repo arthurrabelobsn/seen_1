@@ -3,10 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { supabaseConfigured, supabaseKey, supabaseUrl } from "./env";
 
 const PUBLIC_PATHS = ["/login", "/auth"];
+// Páginas abertas a todos (central de ajuda): nem consultam a sessão
+const OPEN_PATHS = ["/ajuda"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const path = request.nextUrl.pathname;
+  if (OPEN_PATHS.some((p) => path === p || path.startsWith(p + "/"))) return response;
   const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p));
 
   // Sem variáveis de ambiente: deixa a tela de login avisar o que falta.

@@ -33,9 +33,16 @@ SEO no piloto automático: planeja, escreve, publica e mede artigos de blog nos 
 
 O botão "Continuar com Google" já está pronto. Para funcionar, ative em **Supabase → Authentication → Sign In / Providers → Google**, com o Client ID e o Client Secret de um app OAuth do Google Cloud. A URL de retorno que o Google pede aparece nessa mesma tela do Supabase.
 
+## Trilhas e Suporte
+
+- **Trilhas** (`/trilhas`): mini cursos no estilo Netflix. Os cursos e episódios ficam em `src/lib/trilhas.ts`; para ligar um vídeo, preencha `video` com o link do YouTube ou Vimeo. O progresso (episódios assistidos) fica salvo no navegador.
+- **Suporte** (`/ajuda`): central de ajuda pública, aberta em nova aba pelo menu. Artigos em `src/lib/ajuda.ts`; o assistente do chat responde com as perguntas frequentes (`FAQ`) e os artigos. Troque o e-mail e preencha o WhatsApp em `CONTATO`, no mesmo arquivo.
+
 ## Velocidade
 
 - `vercel.json` fixa as funções em São Paulo (`gru1`), perto do Supabase. Confira se o projeto do Supabase também está em São Paulo (sa-east-1).
+- Telas visitadas há menos de 30 segundos voltam na hora (`staleTimes` no `next.config.ts`); salvar qualquer coisa limpa essa memória.
+- A fonte Satoshi carrega sem travar a primeira pintura, e o cliente do Supabase só é baixado no navegador quando alguém envia uma imagem.
 - A sessão é conferida com `getClaims()`, que valida o token localmente quando o projeto usa chaves de assinatura assimétricas (Supabase → Project Settings → JWT Keys). Com a chave antiga (simétrica), cada verificação ainda consulta o Supabase.
 
 ## Banco de dados
