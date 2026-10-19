@@ -10,16 +10,13 @@ import {
   ChevronRight,
   GripVertical,
   Inbox,
-  PanelRightClose,
-  PanelRightOpen,
   Plus,
 } from "lucide-react";
 import type { ArticleStatus } from "@/lib/types";
 import { isoDay, nf, toDate } from "@/lib/format";
 import { StatusBadge } from "@/components/ui";
 import { Hint } from "@/components/hint";
-import { Popover } from "@/components/popover";
-import { usePersistentState } from "@/lib/use-persistent";
+import { Modal } from "@/components/editor/dialogs";
 import { rescheduleArticle } from "../artigos/actions";
 
 export type CalendarItem = {
@@ -79,7 +76,6 @@ export function CalendarBoard({
     setBacklog(serverBacklog);
   }
 
-  const [showSide, setShowSide] = usePersistentState("seen.calendario.painel", true);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
@@ -168,11 +164,6 @@ export function CalendarBoard({
           </Link>
         </div>
 
-        <button type="button" onClick={() => setShowSide(!showSide)} aria-pressed={showSide} className={`btn-ghost ${showSide ? "border-brand text-brand" : ""}`}>
-          {showSide ? <PanelRightClose className="size-4" /> : <PanelRightOpen className="size-4" />}
-          Hoje e sem data
-          {backlog.length > 0 && <span className="rounded-full bg-canvas px-1.5 text-xs tabular-nums text-muted">{backlog.length}</span>}
-        </button>
         <Link href="/artigos/novo" className="btn-primary">
           <Plus className="size-4" /> Criar artigo
         </Link>
@@ -184,18 +175,18 @@ export function CalendarBoard({
         </p>
       )}
 
-      <div className="flex min-h-0 flex-1 gap-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 lg:flex-row">
         {/* Grade do mês */}
         <div className="card flex min-w-0 flex-1 flex-col overflow-x-auto">
-          <div className="flex min-h-0 min-w-[840px] flex-1 flex-col">
-            <div className="grid grid-cols-7 border-b border-line bg-canvas/60 text-xs font-semibold uppercase tracking-wider text-muted">
+          <div className="flex min-h-0 min-w-[720px] flex-1 flex-col lg:min-w-0">
+            <div className="grid grid-cols-[repeat(7,minmax(0,1fr))] border-b border-line bg-canvas/60 text-xs font-semibold uppercase tracking-wider text-muted">
               {WEEKDAYS.map((w) => (
                 <div key={w} className="px-3 py-1.5">
                   {w}
                 </div>
               ))}
             </div>
-            <div className="grid min-h-0 flex-1 grid-cols-7" style={{ gridTemplateRows: `repeat(${weeks}, minmax(104px, 1fr))` }}>
+            <div className="grid min-h-0 flex-1 grid-cols-[repeat(7,minmax(0,1fr))]" style={{ gridTemplateRows: `repeat(${weeks}, minmax(104px, 1fr))` }}>
               {days.map((d) => {
                 const key = isoDay(d);
                 return (
@@ -217,9 +208,8 @@ export function CalendarBoard({
         </div>
 
         {/* Painel lateral: Hoje + Sem data */}
-        {showSide && (
-          <aside className="fixed inset-y-4 right-4 z-40 flex w-72 shrink-0 flex-col gap-3 lg:static lg:inset-auto lg:z-auto">
-            <section className="card shrink-0 p-4 shadow-2xl lg:shadow-none">
+        <aside className="flex w-full shrink-0 flex-col gap-3 lg:w-72">
+            <section className="card shrink-0 p-4">
               <div className="flex items-center gap-2">
                 <span className="flex size-7 items-center justify-center rounded-lg bg-brand text-white">
                   <CalendarCheck className="size-4" />
@@ -253,7 +243,7 @@ export function CalendarBoard({
 
             <section
               {...dropProps("backlog", null)}
-              className={`card flex min-h-0 flex-1 flex-col p-4 shadow-2xl transition lg:shadow-none ${dragOver === "backlog" ? "border-brand bg-brand-soft" : ""}`}
+              className={`card flex min-h-0 flex-1 flex-col p-4 transition ${dragOver === "backlog" ? "border-brand bg-brand-soft" : ""}`}
             >
               <div className="flex items-center gap-2">
                 <span className="flex size-7 items-center justify-center rounded-lg bg-canvas text-muted">
@@ -270,8 +260,7 @@ export function CalendarBoard({
                 ))}
               </div>
             </section>
-          </aside>
-        )}
+        </aside>
       </div>
 
       <Legend />
@@ -281,7 +270,7 @@ export function CalendarBoard({
 
 /* ------------------------------------------------------------------ */
 
-const MINI_H = 46; // altura de um card compacto + espaço
+const MINI_H = 64; // altura de um card compacto + espaço
 const FULL_H = 132; // altura de um card completo + espaço
 
 /** Um dia da grade. Mede o próprio tamanho e mostra só os cards que cabem, com "+N mais". */
@@ -306,6 +295,7 @@ function DayCell({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [space, setSpace] = useState(0);
+  const [openDay, setOpenDay] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -350,25 +340,35 @@ function DayCell({
       <div ref={ref} className="mt-1 flex min-h-0 flex-1 flex-col gap-1">
         {visible.map((a) => (full ? <FullCard key={a.id} item={a} /> : <MiniCard key={a.id} item={a} />))}
         {hidden > 0 && (
-          <Popover
-            panelClassName="w-72 max-h-96 overflow-y-auto p-2"
-            trigger={({ toggle }) => (
-              <button type="button" onClick={toggle} className="w-full rounded-md py-0.5 text-left text-xs font-semibold text-brand hover:bg-brand-soft">
-                +{hidden} {hidden === 1 ? "artigo" : "artigos"}
-              </button>
-            )}
+          <button
+            type="button"
+            onClick={() => setOpenDay(true)}
+            className="w-full shrink-0 rounded-md py-0.5 text-left text-xs font-semibold text-brand hover:bg-brand-soft"
           >
-            {() => (
-              <div className="space-y-2">
-                <p className="px-1 text-xs font-semibold text-muted">
-                  {date.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
-                </p>
-                {items.map((a) => (
-                  <FullCard key={a.id} item={a} />
-                ))}
-              </div>
-            )}
-          </Popover>
+            +{hidden} {hidden === 1 ? "artigo" : "artigos"}
+          </button>
+        )}
+        {openDay && (
+          <Modal
+            title={cap(date.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }))}
+            icon={<CalendarCheck />}
+            onClose={() => setOpenDay(false)}
+            width={440}
+            footer={
+              <Link href={`/artigos/novo?data=${dayKey}`} className="btn-primary">
+                <Plus className="size-4" /> Criar artigo neste dia
+              </Link>
+            }
+          >
+            <p className="mb-3 text-sm text-muted">
+              {items.length} {items.length === 1 ? "artigo" : "artigos"} neste dia
+            </p>
+            <div className="space-y-2">
+              {items.map((a) => (
+                <FullCard key={a.id} item={a} />
+              ))}
+            </div>
+          </Modal>
         )}
       </div>
     </div>
@@ -386,20 +386,22 @@ function dragHandlers(item: CalendarItem) {
   };
 }
 
-/** Card compacto: cor do status + título. Usado quando o dia é baixo. */
+/** Card compacto: cor do status, título e "Ver artigo". Usado quando o dia é baixo. */
 function MiniCard({ item }: { item: CalendarItem }) {
   const drag = dragHandlers(item);
   return (
-    <Link
-      href={`/artigos/${item.id}`}
+    <div
       {...drag}
       title={`${item.title}${item.excerpt ? ` — ${item.excerpt}` : ""}`}
-      className={`block h-[42px] shrink-0 rounded-md border border-line border-l-[3px] bg-surface px-1.5 py-1 shadow-sm shadow-ink/[0.03] transition hover:border-brand/40 hover:shadow-md ${STATUS_BAR[item.status]} ${
+      className={`h-[60px] shrink-0 rounded-md border border-line border-l-[3px] bg-surface px-1.5 py-1 shadow-sm shadow-ink/[0.03] transition hover:border-brand/40 hover:shadow-md ${STATUS_BAR[item.status]} ${
         drag.draggable ? "cursor-grab active:cursor-grabbing" : ""
       }`}
     >
       <span className="line-clamp-2 text-[12px] font-semibold leading-[1.25]">{item.title}</span>
-    </Link>
+      <Link href={`/artigos/${item.id}`} draggable={false} className="mt-0.5 inline-flex items-center gap-0.5 whitespace-nowrap text-[11px] font-medium text-brand hover:underline">
+        <ArrowUpRight className="size-3" /> Ver artigo
+      </Link>
+    </div>
   );
 }
 

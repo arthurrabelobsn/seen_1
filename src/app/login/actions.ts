@@ -71,6 +71,18 @@ export async function resetPassword(_: AuthState, formData: FormData): Promise<A
   return { message: "Se o e-mail tiver conta, você vai receber um link para criar uma nova senha." };
 }
 
+/** Entrar ou criar conta com o Google (precisa estar ativado no Supabase → Authentication → Sign In / Providers → Google). */
+export async function signInWithGoogle(): Promise<AuthState> {
+  if (!supabaseConfigured) return { error: NOT_CONFIGURED };
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: `${await origin()}/auth/callback?next=/calendario` },
+  });
+  if (error || !data.url) return { error: "Não foi possível abrir o login do Google. " + (error?.message ?? "") };
+  redirect(data.url);
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();

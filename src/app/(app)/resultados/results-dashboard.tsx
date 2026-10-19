@@ -22,6 +22,7 @@ import { Sparkline, TrendChart } from "@/components/line-chart";
 import { usePersistentState } from "@/lib/use-persistent";
 import { change, daily, formatMetric, lastDays, METRIC_HELP, METRIC_LABEL, positionBands, totals, value, type MetricKey } from "@/lib/metrics";
 import { clearDemoData } from "./actions";
+import { ResultsManager } from "./results-manager";
 
 export type ArticleInfo = {
   id: string;
@@ -29,6 +30,10 @@ export type ArticleInfo = {
   status: string;
   published_at: string | null;
   keyword: string | null;
+  words: number;
+  volume: number | null;
+  difficulty: number | null;
+  opportunity: string | null;
   cpc: number | null;
 };
 
@@ -56,6 +61,7 @@ export function ResultsDashboard({
   metrics,
   articles,
   focusArticleId,
+  initialTab,
   isDemo,
 }: {
   siteName: string;
@@ -64,8 +70,10 @@ export function ResultsDashboard({
   metrics: Metric[];
   articles: ArticleInfo[];
   focusArticleId: string | null;
+  initialTab: "geral" | "gerenciador";
   isDemo: boolean;
 }) {
+  const [tab, setTab] = useState(initialTab);
   const [view, setView] = usePersistentState<View>("seen.resultados.modo", "simples");
   const [custom, setCustom] = usePersistentState<WidgetId[]>("seen.resultados.paineis", SIMPLE);
   const [focus, setFocus] = useState<string | null>(focusArticleId);
@@ -104,7 +112,17 @@ export function ResultsDashboard({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  const periodHref = (d: number) => `/resultados?dias=${d}${focus ? `&artigo=${focus}` : ""}`;
+  const periodHref = (d: number) => `/resultados?dias=${d}${focus ? `&artigo=${focus}` : ""}${tab === "gerenciador" ? "&aba=gerenciador" : ""}`;
+
+  function switchTab(t: "geral" | "gerenciador") {
+    setTab(t);
+    setFocus(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("artigo");
+    if (t === "gerenciador") url.searchParams.set("aba", "gerenciador");
+    else url.searchParams.delete("aba");
+    window.history.replaceState(null, "", url);
+  }
 
   return (
     <>
@@ -120,6 +138,7 @@ export function ResultsDashboard({
                 </Link>
               ))}
             </nav>
+            {tab === "geral" && !focus && (
             <div className="flex items-center gap-1 rounded-lg border border-line bg-surface p-1 text-sm">
               {(["simples", "completo"] as const).map((v) => (
                 <button
@@ -175,9 +194,29 @@ export function ResultsDashboard({
                 )}
               </Popover>
             </div>
+            )}
           </>
         }
       />
+
+      {/* Abas */}
+      <nav className="-mt-2 mb-5 flex gap-1 border-b border-line">
+        {(
+          [
+            ["geral", "Visão geral"],
+            ["gerenciador", "Gerenciador de artigos"],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => switchTab(id)}
+            className={`-mb-px border-b-2 px-3 py-2.5 text-sm transition ${tab === id ? "border-brand font-semibold text-ink" : "border-transparent text-muted hover:text-ink"}`}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
 
       {isDemo && (
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warn/25 bg-warn-soft px-4 py-2.5 text-sm text-warn">
@@ -202,6 +241,8 @@ export function ResultsDashboard({
           total={byArticle.length}
           onBack={() => openArticle(null)}
         />
+      ) : tab === "gerenciador" ? (
+        <ResultsManager articles={articles} current={current} previous={previous} dates={dates} endDate={endDate} onOpenArticle={openArticle} />
       ) : (
         <div className="space-y-6">
           {visible.has("kpis") && (

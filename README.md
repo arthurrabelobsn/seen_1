@@ -6,13 +6,13 @@ SEO no piloto automático: planeja, escreve, publica e mede artigos de blog nos 
 
 | Tela | Rota | O que faz |
 | --- | --- | --- |
-| Login | `/login` | Entrar, criar conta, recuperar senha e trocar de usuário |
-| Calendário | `/calendario` | Mês em tela cheia; cards com status, título, início do texto, volume e "Ver artigo"; arraste para reagendar; painel "Sem data" |
+| Login | `/login` | Entrar, criar conta (também com Google), recuperar senha e trocar de usuário |
+| Calendário | `/calendario` | Mês inteiro na tela; cards com "Ver artigo"; "+N artigos" abre o dia num popup; painéis fixos Hoje e Sem data; arraste para reagendar |
 | Artigos | `/artigos` | Pastas (Todos, Recomendados, Favoritos, Agendados, Em produção, Publicados), oportunidade, dificuldade 0–10, volume e botão Agendar |
 | Criar artigo | `/artigos/novo` | Escolhe uma keyword salva (traz as métricas dela), título, briefing e data |
 | Editor | `/artigos/[id]` | Editor visual (títulos, negrito, itálico, sublinhado, links, listas, tabelas, imagens, gráficos), menu "Gerar com IA", score de SEO 0–100 com sugestões, agendar, favoritar, exportar Word/PDF/HTML |
 | Keywords | `/keywords` | Adicionar em massa, gerar a partir de temas (IA), em alta, tabela com volume, tendência, dificuldade e oportunidade |
-| Resultados | `/resultados` | Modo Simples, Completo e Personalizado; Impacto da Seen; posição no Google; oportunidades; análise por artigo (`?artigo=`) |
+| Resultados | `/resultados` | Modo Simples, Completo e Personalizado; Impacto da Seen; posição no Google; oportunidades; análise por artigo (`?artigo=`); aba Gerenciador (`?aba=gerenciador`) com colunas, predefinições, métricas personalizadas e exportação CSV |
 | Site | `/site` | Visão geral, Marca e IA (descrição, tom de voz, estilo de imagem), Produtos e serviços, Conexões, Plano, Avançado |
 | Perfil | `/perfil` | Foto, nome, empresa, senha |
 
@@ -28,6 +28,10 @@ SEO no piloto automático: planeja, escreve, publica e mede artigos de blog nos 
 - Supabase: autenticação, Postgres com RLS e Storage (bucket `media`)
 - Tailwind CSS 4, TipTap (editor), Lucide (ícones), `html-to-docx` (Word)
 - Fonte Satoshi, servida pelo Fontshare; Geist empacotada como reserva
+
+## Login com Google
+
+O botão "Continuar com Google" já está pronto. Para funcionar, ative em **Supabase → Authentication → Sign In / Providers → Google**, com o Client ID e o Client Secret de um app OAuth do Google Cloud. A URL de retorno que o Google pede aparece nessa mesma tela do Supabase.
 
 ## Velocidade
 

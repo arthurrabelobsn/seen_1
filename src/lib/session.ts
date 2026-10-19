@@ -16,6 +16,9 @@ export const getSession = cache(async () => {
   const claims = auth?.claims;
   if (!claims?.sub) redirect("/login");
   const user = { id: claims.sub, email: (claims.email as string | undefined) ?? "" };
+  // Quem entra com o Google já traz a foto da conta
+  const meta = (claims.user_metadata ?? {}) as Record<string, unknown>;
+  const providerAvatar = (meta.avatar_url ?? meta.picture ?? null) as string | null;
 
   const [{ data: profile }, { data: sites }, schemaCheck] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
@@ -34,7 +37,7 @@ export const getSession = cache(async () => {
     supabase,
     user,
     profile: p,
-    avatarUrl: avatarFor(user.email, p.avatar_url),
+    avatarUrl: avatarFor(user.email, p.avatar_url ?? providerAvatar),
     sites: list,
     currentSite,
     needsMigration: Boolean(schemaCheck.error),

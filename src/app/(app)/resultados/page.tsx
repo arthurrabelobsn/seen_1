@@ -15,6 +15,7 @@ export default async function ResultsPage({ searchParams }: PageProps<"/resultad
   const params = await searchParams;
   const days = RANGES.find((r) => String(r) === params.dias) ?? 28;
   const focus = typeof params.artigo === "string" ? params.artigo : null;
+  const tab = params.aba === "gerenciador" ? "gerenciador" : "geral";
   const { supabase, site } = await requireSite();
 
   const today = new Date();
@@ -28,7 +29,7 @@ export default async function ResultsPage({ searchParams }: PageProps<"/resultad
       .eq("site_id", site.id)
       .gte("date", isoDay(start))
       .order("date"),
-    supabase.from("articles").select("id, title, status, published_at, focus_keyword, keyword_id").eq("site_id", site.id),
+    supabase.from("articles").select("id, title, status, published_at, focus_keyword, keyword_id, word_count, volume, difficulty, opportunity").eq("site_id", site.id),
     supabase.from("keywords").select("id, term, cpc").eq("site_id", site.id).not("cpc", "is", null),
   ]);
 
@@ -41,6 +42,10 @@ export default async function ResultsPage({ searchParams }: PageProps<"/resultad
     status: a.status,
     published_at: a.published_at,
     keyword: a.focus_keyword,
+    words: a.word_count ?? 0,
+    volume: a.volume ?? null,
+    difficulty: a.difficulty ?? null,
+    opportunity: a.opportunity ?? null,
     cpc: (a.keyword_id && cpcById.get(a.keyword_id)) || (a.focus_keyword && cpcByTerm.get(a.focus_keyword.toLowerCase())) || null,
   }));
 
@@ -76,6 +81,7 @@ export default async function ResultsPage({ searchParams }: PageProps<"/resultad
         metrics={metrics}
         articles={articles}
         focusArticleId={focus}
+        initialTab={tab}
         isDemo={articles.some((a) => a.title.startsWith("[Exemplo] "))}
       />
     </div>

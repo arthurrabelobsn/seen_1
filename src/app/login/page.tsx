@@ -1,79 +1,68 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Check } from "lucide-react";
+import { siGoogle } from "simple-icons";
 import { supabaseConfigured } from "@/lib/supabase/env";
-import { SeenLogo } from "@/components/brand";
+import { SeenIcon } from "@/components/brand";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Entrar" };
 
 export default function LoginPage() {
   return (
-    <main className="grid min-h-screen lg:grid-cols-[1fr_1.1fr]">
-      <section className="flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-sm">
-          {/* No computador o logo fica no painel azul; no celular, aqui */}
-          <SeenLogo className="mb-12 h-8 w-auto lg:hidden" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#eef2fb] px-4 py-8 sm:px-8">
+      {/* Brilho suave de fundo */}
+      <div aria-hidden className="pointer-events-none absolute -left-40 -top-40 size-[520px] rounded-full bg-[#c9d8ff] opacity-70 blur-3xl" />
+      <div aria-hidden className="pointer-events-none absolute -bottom-48 -right-32 size-[560px] rounded-full bg-[#d6e4ff] opacity-80 blur-3xl" />
 
-          {!supabaseConfigured && (
-            <p className="mb-6 rounded-lg border border-warn/30 bg-warn-soft px-3 py-2.5 text-sm text-warn">
-              Falta configurar o Supabase: preencha <code className="font-mono">.env.local</code> com a URL e a
-              chave do projeto.
-            </p>
-          )}
+      <div className="relative grid w-full max-w-[1080px] overflow-hidden rounded-[28px] bg-surface p-3 shadow-[0_30px_80px_-20px_rgba(0,61,180,0.28)] lg:grid-cols-[1fr_1.05fr]">
+        {/* Painel com gradiente */}
+        <aside className="relative hidden min-h-[620px] overflow-hidden rounded-[22px] p-9 text-white lg:flex lg:flex-col lg:justify-between">
+          <Gradient />
+          <SeenIcon variant="white" className="relative h-9 w-auto self-start" />
+          <div className="relative">
+            <p className="text-sm font-medium text-white/80">Com a Seen, você</p>
+            <h1 className="mt-2 text-[34px] font-black leading-[1.08] tracking-tight">
+              aparece no Google para quem procura o que você vende.
+            </h1>
+          </div>
+        </aside>
 
-          <Suspense>
-            <LoginForm />
-          </Suspense>
-        </div>
-      </section>
+        {/* Formulário */}
+        <section className="flex items-center justify-center px-5 py-10 sm:px-12 lg:px-16">
+          <div className="w-full max-w-[380px]">
+            <SeenIcon variant="blue" className="h-7 w-auto" />
 
-      <aside className="relative hidden overflow-hidden bg-[linear-gradient(150deg,#2a7bff_0%,#005dff_45%,#0039b8_100%)] text-white lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-14">
-        <AbstractShapes />
+            {!supabaseConfigured && (
+              <p className="mt-6 rounded-lg border border-warn/30 bg-warn-soft px-3 py-2.5 text-sm text-warn">
+                Falta configurar o Supabase: preencha <code className="font-mono">.env.local</code> com a URL e a chave do projeto.
+              </p>
+            )}
 
-        <div className="relative flex max-w-md flex-col items-center text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element -- logo estático */}
-          <img src="/brand/logo-white.png" alt="Seen" width={1014} height={191} className="h-12 w-auto" />
-          <h1 className="mt-10 text-[34px] font-black leading-[1.1] tracking-tight">Seja visto por quem procura o que você vende.</h1>
-          <ul className="mt-8 space-y-3 text-left text-white/90">
-            {[
-              "Palavras certas para o seu público, com a busca de cada uma",
-              "Artigos no tom da sua marca, prontos para o Google",
-              "Calendário de publicação no seu site",
-              "Visitas e posição de cada artigo, direto do Google",
-            ].map((t) => (
-              <li key={t} className="flex items-start gap-2.5">
-                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-white/15">
-                  <Check className="size-3.5" />
-                </span>
-                {t}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <p className="absolute bottom-8 text-sm text-white/60">© Seen</p>
-      </aside>
+            <Suspense>
+              <LoginForm googlePath={siGoogle.path} />
+            </Suspense>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
 
-/** Formas abstratas de fundo: luzes desfocadas e anéis que lembram os olhos do ícone. */
-function AbstractShapes() {
+/** Gradiente em "malha": manchas de azul da marca, ciano e lavanda que se misturam. */
+function Gradient() {
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0">
-      <div className="absolute -left-24 -top-24 size-[420px] rounded-full bg-[#5fa0ff] opacity-50 blur-3xl" />
-      <div className="absolute -bottom-32 -right-24 size-[520px] rounded-full bg-[#002a8f] opacity-60 blur-3xl" />
-      <div className="absolute right-[12%] top-[18%] size-40 rounded-full bg-[#7fb4ff] opacity-30 blur-2xl" />
-      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 800 900" preserveAspectRatio="xMidYMid slice">
-        <circle cx="690" cy="120" r="150" fill="none" stroke="white" strokeOpacity="0.12" strokeWidth="2" />
-        <circle cx="690" cy="120" r="95" fill="none" stroke="white" strokeOpacity="0.08" strokeWidth="2" />
-        <circle cx="110" cy="800" r="190" fill="none" stroke="white" strokeOpacity="0.1" strokeWidth="2" />
-        <circle cx="250" cy="800" r="190" fill="none" stroke="white" strokeOpacity="0.07" strokeWidth="2" />
-        <circle cx="120" cy="170" r="6" fill="white" fillOpacity="0.35" />
-        <circle cx="700" cy="720" r="8" fill="white" fillOpacity="0.25" />
-        <circle cx="610" cy="560" r="4" fill="white" fillOpacity="0.35" />
-        <path d="M-20 520 C 180 440, 320 620, 520 540 S 820 470, 860 520" fill="none" stroke="white" strokeOpacity="0.1" strokeWidth="2" />
+    <div aria-hidden className="absolute inset-0 bg-[#0a3ad6]">
+      <div className="absolute -left-20 top-1/4 h-[70%] w-[75%] rounded-full bg-[#001a73] blur-[70px]" />
+      <div className="absolute -right-10 -top-16 h-[55%] w-[70%] rounded-full bg-[#7cc6ff] opacity-90 blur-[80px]" />
+      <div className="absolute -bottom-24 right-0 h-[60%] w-[80%] rounded-full bg-[#9db8ff] opacity-90 blur-[90px]" />
+      <div className="absolute left-1/4 top-0 h-[40%] w-[40%] rounded-full bg-[#005dff] blur-[60px]" />
+      <div className="absolute bottom-10 left-6 h-[30%] w-[45%] rounded-full bg-[#4f7dff] opacity-80 blur-[70px]" />
+      {/* granulado leve para não parecer chapado */}
+      <svg className="absolute inset-0 h-full w-full opacity-[0.12] mix-blend-overlay">
+        <filter id="seen-grain">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#seen-grain)" />
       </svg>
     </div>
   );

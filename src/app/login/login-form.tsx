@@ -1,109 +1,184 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
-import { resetPassword, signIn, signUp, type AuthState } from "./actions";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { resetPassword, signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
 
 type Mode = "entrar" | "criar" | "recuperar";
 
 const TITLES: Record<Mode, { title: string; subtitle: string; cta: string }> = {
-  entrar: { title: "Entrar", subtitle: "Bem-vindo de volta.", cta: "Entrar" },
-  criar: { title: "Criar conta", subtitle: "Comece com seu primeiro site em 2 minutos.", cta: "Criar conta" },
-  recuperar: { title: "Recuperar senha", subtitle: "Enviamos um link para você criar outra.", cta: "Enviar link" },
+  entrar: { title: "Entrar na sua conta", subtitle: "Bem-vindo de volta. Seus artigos e resultados estão te esperando.", cta: "Entrar" },
+  criar: { title: "Criar uma conta", subtitle: "Planeje, escreva e publique artigos que trazem clientes pelo Google.", cta: "Começar agora" },
+  recuperar: { title: "Recuperar senha", subtitle: "Enviamos um link para o seu e-mail para você criar uma nova senha.", cta: "Enviar link" },
 };
 
-export function LoginForm() {
-  const [mode, setMode] = useState<Mode>("entrar");
+export function LoginForm({ googlePath }: { googlePath: string }) {
   const params = useSearchParams();
-  const callbackError = params.get("erro");
+  const [mode, setMode] = useState<Mode>(params.get("modo") === "criar" ? "criar" : "entrar");
+  const reason = params.get("motivo") ?? "";
+  const providerOff = /provider is not enabled|unsupported provider/i.test(reason);
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold tracking-tight">{TITLES[mode].title}</h2>
-      <p className="mt-1 text-sm text-muted">{TITLES[mode].subtitle}</p>
+      <h2 className="mt-6 text-[30px] font-bold leading-tight tracking-tight">{TITLES[mode].title}</h2>
+      <p className="mt-2 text-sm leading-relaxed text-muted">{TITLES[mode].subtitle}</p>
 
-      {params.get("trocar") && (
-        <p className="mt-5 rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand-strong">
-          Sessão encerrada. Entre com a outra conta.
-        </p>
+      {params.get("trocar") && <Notice tone="info">Sessão encerrada. Entre com a outra conta.</Notice>}
+      {params.get("erro") && (
+        <Notice tone="error">
+          {providerOff ? "O login com Google ainda não foi ativado. Use e-mail e senha por enquanto." : "O link expirou ou é inválido. Tente de novo."}
+          {reason && !providerOff && <span className="mt-1 block text-xs opacity-80">Detalhe: {reason}</span>}
+        </Notice>
       )}
 
-      {callbackError && (
-        <p className="mt-5 rounded-lg bg-bad-soft px-3 py-2 text-sm text-bad">
-          O link expirou ou é inválido. Tente de novo.
-          {params.get("motivo") && <span className="mt-1 block text-xs opacity-80">Detalhe: {params.get("motivo")}</span>}
-        </p>
+      {/* key reinicia o formulário ao trocar de modo */}
+      <AuthForm key={mode} mode={mode} next={params.get("next") ?? ""} onForgot={() => setMode("recuperar")} />
+
+      {mode !== "recuperar" && (
+        <>
+          <div className="my-6 flex items-center gap-3 text-xs text-muted">
+            <span className="h-px flex-1 bg-line" />
+            ou continue com
+            <span className="h-px flex-1 bg-line" />
+          </div>
+          <GoogleButton path={googlePath} />
+        </>
       )}
 
-      {/* key força o formulário a reiniciar o estado ao trocar de modo */}
-      <AuthForm key={mode} mode={mode} next={params.get("next") ?? ""} />
-
-      <div className="mt-6 space-y-2 text-center text-sm text-muted">
-        {mode === "entrar" && (
+      <p className="mt-8 text-center text-sm text-muted">
+        {mode === "entrar" ? (
           <>
-            <p>
-              Não tem conta?{" "}
-              <button type="button" onClick={() => setMode("criar")} className="font-medium text-brand hover:underline">
-                Criar conta
-              </button>
-            </p>
-            <button type="button" onClick={() => setMode("recuperar")} className="hover:text-ink hover:underline">
-              Esqueci minha senha
+            Ainda não tem conta?{" "}
+            <button type="button" onClick={() => setMode("criar")} className="font-semibold text-brand hover:underline">
+              Criar conta
             </button>
           </>
-        )}
-        {mode !== "entrar" && (
-          <button type="button" onClick={() => setMode("entrar")} className="font-medium text-brand hover:underline">
+        ) : mode === "criar" ? (
+          <>
+            Já tem conta?{" "}
+            <button type="button" onClick={() => setMode("entrar")} className="font-semibold text-brand hover:underline">
+              Entrar
+            </button>
+          </>
+        ) : (
+          <button type="button" onClick={() => setMode("entrar")} className="font-semibold text-brand hover:underline">
             Voltar para Entrar
           </button>
         )}
-      </div>
+      </p>
     </div>
   );
 }
 
-function AuthForm({ mode, next }: { mode: Mode; next: string }) {
+function AuthForm({ mode, next, onForgot }: { mode: Mode; next: string; onForgot: () => void }) {
   const action = mode === "entrar" ? signIn : mode === "criar" ? signUp : resetPassword;
   const [state, formAction, pending] = useActionState<AuthState, FormData>(action, {});
+  const [show, setShow] = useState(false);
 
   return (
-    <form action={formAction} className="mt-7 space-y-4">
+    <form action={formAction} className="mt-8 space-y-5">
       <input type="hidden" name="next" value={next} />
 
       {mode === "criar" && (
         <div>
-          <label htmlFor="full_name" className="label">Seu nome</label>
-          <input id="full_name" name="full_name" className="field" autoComplete="name" required />
+          <label htmlFor="full_name" className="mb-2 block text-sm font-medium">
+            Seu nome
+          </label>
+          <input id="full_name" name="full_name" className="field h-12 rounded-xl px-4" autoComplete="name" required />
         </div>
       )}
 
       <div>
-        <label htmlFor="email" className="label">E-mail</label>
-        <input id="email" name="email" type="email" className="field" autoComplete="email" required />
+        <label htmlFor="email" className="mb-2 block text-sm font-medium">
+          Seu e-mail
+        </label>
+        <input id="email" name="email" type="email" className="field h-12 rounded-xl px-4" autoComplete="email" placeholder="voce@empresa.com.br" required />
       </div>
 
       {mode !== "recuperar" && (
         <div>
-          <label htmlFor="password" className="label">Senha</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            className="field"
-            minLength={mode === "criar" ? 8 : undefined}
-            autoComplete={mode === "criar" ? "new-password" : "current-password"}
-            required
-          />
+          <div className="mb-2 flex items-center justify-between">
+            <label htmlFor="password" className="text-sm font-medium">
+              Senha
+            </label>
+            {mode === "entrar" && (
+              <button type="button" onClick={onForgot} className="text-xs text-muted hover:text-brand hover:underline">
+                Esqueci minha senha
+              </button>
+            )}
+          </div>
+          <div className="relative">
+            <input
+              id="password"
+              name="password"
+              type={show ? "text" : "password"}
+              className="field h-12 rounded-xl px-4 pr-12"
+              minLength={mode === "criar" ? 8 : undefined}
+              autoComplete={mode === "criar" ? "new-password" : "current-password"}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShow(!show)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted hover:text-ink"
+              aria-label={show ? "Esconder senha" : "Mostrar senha"}
+            >
+              {show ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
+            </button>
+          </div>
           {mode === "criar" && <p className="hint">Mínimo de 8 caracteres.</p>}
         </div>
       )}
 
-      {state.error && <p role="alert" className="rounded-lg bg-bad-soft px-3 py-2 text-sm text-bad">{state.error}</p>}
-      {state.message && <p role="status" className="rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand-strong">{state.message}</p>}
+      {state.error && <Notice tone="error">{state.error}</Notice>}
+      {state.message && <Notice tone="info">{state.message}</Notice>}
 
-      <button type="submit" disabled={pending} className="btn-primary w-full py-2.5">
-        {pending ? "Aguarde…" : TITLES[mode].cta}
+      <button
+        type="submit"
+        disabled={pending}
+        className="btn-primary h-12 w-full rounded-xl text-[15px] shadow-[0_12px_28px_-10px_rgba(0,93,255,0.75)] hover:shadow-[0_14px_32px_-10px_rgba(0,93,255,0.9)]"
+      >
+        {pending ? <Loader2 className="size-5 animate-spin" /> : TITLES[mode].cta}
       </button>
     </form>
+  );
+}
+
+function GoogleButton({ path }: { path: string }) {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() =>
+          startTransition(async () => {
+            const res = await signInWithGoogle();
+            if (res?.error) setError(res.error);
+          })
+        }
+        className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-line bg-surface text-sm font-semibold transition hover:border-brand/40 hover:bg-canvas disabled:opacity-60"
+      >
+        {pending ? (
+          <Loader2 className="size-5 animate-spin text-muted" />
+        ) : (
+          <svg viewBox="0 0 24 24" width={18} height={18} fill="#4285F4" aria-hidden>
+            <path d={path} />
+          </svg>
+        )}
+        Continuar com Google
+      </button>
+      {error && <Notice tone="error">{error}</Notice>}
+    </>
+  );
+}
+
+function Notice({ tone, children }: { tone: "error" | "info"; children: React.ReactNode }) {
+  return (
+    <p role={tone === "error" ? "alert" : "status"} className={`mt-4 rounded-xl px-3.5 py-2.5 text-sm ${tone === "error" ? "bg-bad-soft text-bad" : "bg-brand-soft text-brand-strong"}`}>
+      {children}
+    </p>
   );
 }

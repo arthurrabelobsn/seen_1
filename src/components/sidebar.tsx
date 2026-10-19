@@ -72,11 +72,12 @@ export function Sidebar({ userName, userEmail, avatarUrl, sites, currentSiteId }
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-16 items-center justify-between px-5">
+        {/* Logo no eixo central do menu */}
+        <div className="relative flex h-16 items-center justify-center px-5">
           <Link href="/calendario" aria-label="Seen" onClick={close}>
             <SeenLogo className="h-[22px] w-auto" />
           </Link>
-          <button type="button" onClick={close} className="rounded-lg p-1.5 hover:bg-canvas lg:hidden" aria-label="Fechar menu">
+          <button type="button" onClick={close} className="absolute right-4 rounded-lg p-1.5 hover:bg-canvas lg:hidden" aria-label="Fechar menu">
             <X className="size-5" />
           </button>
         </div>
